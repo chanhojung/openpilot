@@ -181,19 +181,16 @@ class CarController():
     self.res_speed = 0
     self.res_speed_timer = 0
 
-    self.anglesteer_desire = 0.0
-    self.angle_range = [0, 5, 30]
-    self.angle_steerMax_range = [284, int(self.params.get("SteerMaxBaseAdj", encoding="utf8")), CarControllerParams.STEER_MAX]
-    self.angle_steerDeltaUp_range = [3, int(self.params.get("SteerDeltaUpBaseAdj", encoding="utf8")), CarControllerParams.STEER_DELTA_UP]
-    self.angle_steerDeltaDown_range = [5, int(self.params.get("SteerDeltaDownBaseAdj", encoding="utf8")), CarControllerParams.STEER_DELTA_DOWN]
-
-    self.steerMax = int(self.params.get("SteerMaxBaseAdj", encoding="utf8"))
-    self.steerDeltaUp = int(self.params.get("SteerDeltaUpBaseAdj", encoding="utf8"))
-    self.steerDeltaDown = int(self.params.get("SteerDeltaDownBaseAdj", encoding="utf8"))
-
     self.steerMax_base = int(self.params.get("SteerMaxBaseAdj", encoding="utf8"))
     self.steerDeltaUp_base = int(self.params.get("SteerDeltaUpBaseAdj", encoding="utf8"))
     self.steerDeltaDown_base = int(self.params.get("SteerDeltaDownBaseAdj", encoding="utf8"))
+
+    self.anglesteer_desire = 0.0
+    self.angle_range = [5, 30]
+    self.angle_steerMax_range = [self.steerMax_base, CarControllerParams.STEER_MAX]
+    self.angle_steerDeltaUp_range = [self.steerDeltaUp_base, CarControllerParams.STEER_DELTA_UP]
+    self.angle_steerDeltaDown_range = [self.steerDeltaDown_base, CarControllerParams.STEER_DELTA_DOWN]
+
     self.model_speed_range = [30, 100, 255]
     self.steerMax_range = [CarControllerParams.STEER_MAX, self.steerMax_base, self.steerMax_base]
     self.steerDeltaUp_range = [CarControllerParams.STEER_DELTA_UP, self.steerDeltaUp_base, self.steerDeltaUp_base]
@@ -215,6 +212,7 @@ class CarController():
 
     self.p = CarControllerParams
     self.sm = messaging.SubMaster(['controlsState'])
+    
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
              left_lane, right_lane, left_lane_depart, right_lane_depart, set_speed, lead_visible, lead_dist, lead_vrel, lead_yrel, sm):
 
