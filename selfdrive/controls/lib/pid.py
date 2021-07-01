@@ -114,7 +114,7 @@ class LongPIDController:
     self._k_d = k_d  # derivative gain
     self._k_f = k_f  # feedforward gain
 
-    self.max_accel_d = 1.0 * CV.KPH_TO_MS
+    self.max_accel_d = 0.5 * CV.KPH_TO_MS
 
     self.pos_limit = pos_limit
     self.neg_limit = neg_limit

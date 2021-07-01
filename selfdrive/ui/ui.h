@@ -102,8 +102,6 @@ typedef struct {
 
 typedef struct UIScene {
 
-  bool mlButtonEnabled;
-
   mat3 view_from_calib;
   bool world_objects_visible;
 
@@ -176,6 +174,7 @@ typedef struct UIScene {
   cereal::ControlsState::Reader controls_state;
   cereal::CarState::GearShifter getGearShifter;
   cereal::LateralPlan::Reader lateral_plan;
+  cereal::LiveMapData::Reader live_map_data;
 
   // gps
   int satelliteCount;
@@ -230,6 +229,14 @@ typedef struct UIScene {
     bool lanelessModeStatus;
     float steerActuatorDelay;
   } lateralPlan;
+
+  struct _LiveMapData
+  {
+    float opkrspeedlimit;
+    float opkrspeedlimitdist;
+    float opkrspeedsign;
+    float opkrcurveangle;
+  } liveMapData;
 } UIScene;
 
 typedef struct UIState {

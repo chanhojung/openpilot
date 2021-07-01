@@ -97,6 +97,9 @@ class Planner():
     self.vego = 0
     self.second = 0.0
     self.map_enabled = False
+    self.mapspeed = 0
+    self.mapspeeddist = 0
+    self.sm = messaging.SubMaster(['liveMapData'])
 
   def choose_solution(self, v_cruise_setpoint, enabled):
     if enabled:
@@ -147,73 +150,59 @@ class Planner():
     self.v_acc_start = self.v_acc_next
     self.a_acc_start = self.a_acc_next
 
-    self.second += 0.25
-    if self.second > 1.0:
+    # opkr
+    self.second += 1
+    if self.second > 30:
       self.map_enabled = self.params.get_bool("OpkrMapEnable")
-      self.second = 0.0
-    if self.map_enabled:
+      self.second = 0
+    if self.map_enabled and v_ego > 0.3:
       self.target_speed_map_counter += 1
-      if self.target_speed_map_counter >= (50+self.target_speed_map_counter1) and self.target_speed_map_counter_check == False:
+      if self.target_speed_map_counter >= (40+self.target_speed_map_counter1) and self.target_speed_map_counter_check == False:
+        self.sm.update(0)
+        try:
+          self.mapspeed = float(self.sm['liveMapData'].speedLimit)
+          self.mapspeeddist = float(self.sm['liveMapData'].speedLimitDistance)
+          self.map_sign = float(self.sm['liveMapData'].safetySign)
+        except:
+          pass
         self.target_speed_map_counter_check = True
-        os.system("logcat -d -s opkrspdlimit,opkrspd2limit | grep opkrspd | tail -n 1 | awk \'{print $7}\' > /data/params/d/LimitSetSpeedCamera &")
-        os.system("logcat -d -s opkrspddist,opkrspd2dist | grep opkrspd | tail -n 1 | awk \'{print $7}\' > /data/params/d/LimitSetSpeedCameraDist &")
-        os.system("logcat -d -s opkrsigntype,opkrspdsign | grep opkrspd | tail -n 1 | awk \'{print $7}\' > /data/params/d/OpkrMapSign &")
         self.target_speed_map_counter3 += 1
-        if self.target_speed_map_counter3 > 2:
+        if self.target_speed_map_counter3 > 1:
           self.target_speed_map_counter3 = 0
           os.system("logcat -c &")
-      elif self.target_speed_map_counter >= (75+self.target_speed_map_counter1):
+      elif self.target_speed_map_counter >= (50+self.target_speed_map_counter1):
         self.target_speed_map_counter1 = 0
         self.target_speed_map_counter = 0
         self.target_speed_map_counter_check = False
-        try:
-          mapspeed = self.params.get("LimitSetSpeedCamera", encoding="utf8")
-          mapspeeddist = self.params.get("LimitSetSpeedCameraDist", encoding="utf8")
-          mapsign = self.params.get("OpkrMapSign", encoding="utf8")
-          if mapsign is not None:
-            try:
-              mapsign = int(float(mapsign.rstrip('\n')))
-              self.map_sign = mapsign
-            except:
-              pass
+        if self.mapspeed and self.mapspeeddist:
+          if self.mapspeed > 29:
+            self.target_speed_map = self.mapspeed
+            self.target_speed_map_dist = self.mapspeeddist
+            if self.target_speed_map_dist > 1001:
+              self.target_speed_map_block = True
+            self.target_speed_map_counter1 = 60
+            os.system("logcat -c &")
           else:
-            mapsign = 0
-            self.map_sign = mapsign
-          if mapspeed is not None and mapspeeddist is not None:
-            try:
-              mapspeed = int(float(mapspeed.rstrip('\n')))
-              mapspeeddist = int(float(mapspeeddist.rstrip('\n')))
-            except:
-              pass
-            if mapspeed > 29:
-              self.target_speed_map = mapspeed
-              self.target_speed_map_dist = mapspeeddist
-              if self.target_speed_map_dist > 1001:
-                self.target_speed_map_block = True
-              self.target_speed_map_counter1 = 80
-              os.system("logcat -c &")
-            else:
-              self.target_speed_map = 0
-              self.target_speed_map_dist = 0
-              self.target_speed_map_block = False
-          elif mapspeed is None and mapspeeddist is None and self.target_speed_map_counter2 < 2:
-            self.target_speed_map_counter2 += 1
-            self.target_speed_map_counter = 51
             self.target_speed_map = 0
             self.target_speed_map_dist = 0
-            self.target_speed_map_counter_check = True
             self.target_speed_map_block = False
-            self.target_speed_map_sign = False
-          else:
-            self.target_speed_map_counter = 49
-            self.target_speed_map_counter2 = 0
-            self.target_speed_map = 0
-            self.target_speed_map_dist = 0
-            self.target_speed_map_counter_check = False
-            self.target_speed_map_block = False
-            self.target_speed_map_sign = False
-        except:
-          pass
+        elif not self.mapspeed and not self.mapspeeddist and self.target_speed_map_counter2 < 2:
+          self.target_speed_map_counter2 += 1
+          self.target_speed_map_counter = 41
+          self.target_speed_map = 0
+          self.target_speed_map_dist = 0
+          self.target_speed_map_counter_check = True
+          self.target_speed_map_block = False
+          self.target_speed_map_sign = False
+        else:
+          self.target_speed_map_counter = 39
+          self.target_speed_map_counter2 = 0
+          self.target_speed_map = 0
+          self.target_speed_map_dist = 0
+          self.target_speed_map_counter_check = False
+          self.target_speed_map_block = False
+          self.target_speed_map_sign = False
+          self.map_sign = 0
 
     # Calculate speed for normal cruise control
     if enabled and not self.first_loop and not sm['carState'].brakePressed and not sm['carState'].gasPressed:

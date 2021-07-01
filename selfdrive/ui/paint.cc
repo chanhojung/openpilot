@@ -420,8 +420,16 @@ static void ui_draw_debug(UIState *s)
       } else if (scene.long_plan_source == 5) {
         ui_print(s, ui_viz_rx, ui_viz_ry+650, "LP:model");
       }
+      if (s->scene.map_is_running) {
+        ui_print(s, ui_viz_rx, ui_viz_ry+700, "MS:%.0f", scene.mapSign);
+        ui_print(s, ui_viz_rx, ui_viz_ry+750, "RC:%.0f", scene.liveMapData.opkrcurveangle);
+      }
+    } else {
+      if (s->scene.map_is_running) {
+        ui_print(s, ui_viz_rx, ui_viz_ry+650, "MS:%.0f", scene.mapSign);
+        ui_print(s, ui_viz_rx, ui_viz_ry+700, "RC:%.0f", scene.liveMapData.opkrcurveangle);
+      }
     }
-    if (s->scene.map_is_running) ui_print(s, ui_viz_rx, ui_viz_ry+700, "MS:%.0f", scene.mapSign);
     nvgFontSize(s->vg, 40);
     nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
     if (scene.lateralControlMethod == 0) {
@@ -732,36 +740,6 @@ static void ui_draw_vision_face(UIState *s) {
   const int center_y = s->viz_rect.bottom() - footer_h + ((footer_h - radius) / 2);
   ui_draw_circle_image(s, center_x, center_y, radius, "driver_face", s->scene.dm_active);
 }
-
-// Model Long does not work well. Sometimes it works unexpectedly. So it is disabled for now.
-// static void ui_draw_ml_button(UIState *s) {
-//   int btn_w = 140;
-//   int btn_h = 140;
-//   int btn_x = s->viz_rect.x + s->viz_rect.w - btn_w - 515;
-//   int btn_y = 1080 - btn_h - 35;
-//   int btn_xc = btn_x + (btn_w/2);
-//   int btn_yc = btn_y + (btn_h/2);
-//   nvgBeginPath(s->vg);
-//   nvgRoundedRect(s->vg, btn_x, btn_y, btn_w, btn_h, 100);
-//   if (s->scene.mlButtonEnabled) {
-//     nvgStrokeColor(s->vg, nvgRGBA(55, 184, 104, 255));
-//   } else {
-//     nvgStrokeColor(s->vg, nvgRGBA(255,10,10,80));
-//   }
-//   nvgStrokeWidth(s->vg, 6);
-//   nvgStroke(s->vg);
-
-//   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
-//   nvgFontSize(s->vg, 45);
-//   if (s->scene.mlButtonEnabled) {
-//     nvgFillColor(s->vg, nvgRGBA(55, 184, 104, 255));
-//     nvgFontSize(s->vg, 55);
-//     nvgText(s->vg,btn_xc,btn_yc,"MDL",NULL);
-//   } else {
-//     nvgFillColor(s->vg, nvgRGBA(255,255,255,200));
-//     nvgText(s->vg,btn_xc,btn_yc,"MDL",NULL);
-//   }
-// }
 
 //BB START: functions added for the display of various items
 static int bb_ui_draw_measure(UIState *s, const char* bb_value, const char* bb_uom, const char* bb_label,
