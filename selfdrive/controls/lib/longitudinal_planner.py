@@ -85,8 +85,10 @@ class Planner():
     self.first_loop = True
 
     self.target_speed_map = 0
+    self.target_speed_map_prev = 0
     self.target_speed_map_counter = 0
     self.target_speed_map_dist = 0
+    self.target_speed_map_dist_prev = 0
     self.target_speed_map_block = False
     self.target_speed_map_sign = False
     self.map_sign = 0
@@ -151,7 +153,8 @@ class Planner():
       self.second = 0
     if self.map_enabled and v_ego > 0.3:
       self.target_speed_map_counter += 1
-      if self.target_speed_map_counter >= 75:
+      if self.target_speed_map_counter >= 50:
+        self.target_speed_map_counter = 0
         self.sm.update(0)
         try:
           self.target_speed_map = float(self.sm['liveMapData'].speedLimit) if float(self.sm['liveMapData'].speedLimit) > 29 else 0
@@ -164,6 +167,7 @@ class Planner():
           self.map_sign = float(self.sm['liveMapData'].safetySign)
         except:
           pass
+        print("map_speed = {}   map_dist = {}".format(self.target_speed_map, self.target_speed_map_dist))
 
     # Calculate speed for normal cruise control
     if enabled and not self.first_loop and not sm['carState'].brakePressed and not sm['carState'].gasPressed:
