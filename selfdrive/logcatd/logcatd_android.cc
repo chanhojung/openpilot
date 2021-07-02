@@ -64,6 +64,9 @@ int main() {
       last_log_time.tv_sec = entry.tv_sec;
       last_log_time.tv_nsec = entry.tv_nsec;
 
+      MessageBuilder msg;
+      auto framed = msg.initEvent().initLiveMapData();
+
       nTime++;
       if( nTime > 10 )
       {
@@ -99,28 +102,22 @@ int main() {
         oValue = 0;
       }
 
-      MessageBuilder msg;
-      auto framed = msg.initEvent().initLiveMapData();
       if ( oValue == 1 )
       {
-        framed.setSpeedLimitDistance( res.speedLimitDistance );  // raw_target_speed_map_dist Float32;
-        framed.setRoadCurvature( res.roadCurvature ); // road_curvature Float32;
         oTime = 0;
-        printf("1: spd = %f    spddist = %f    rc = %f    ss = %f\n", res.speedLimit, res.speedLimitDistance, res.roadCurvature, res.safetySign);
         system("logcat -c &");
       }
       else if ( oValue == 2 )
       {
-        framed.setSpeedLimit( res.speedLimit );  // Float32;
-        framed.setRoadCurvature( res.roadCurvature ); // road_curvature Float32;
         oTime = 0;
       }
-      else if ( oValue == 3 )
-      {
-        framed.setSafetySign( res.safetySign ); // map_sign Float32;
-        framed.setRoadCurvature( res.roadCurvature ); // road_curvature Float32;
-        printf("2: spd = %f    spddist = %f    rc = %f    ss = %f\n", res.speedLimit, res.speedLimitDistance, res.roadCurvature, res.safetySign);
-      }
+
+      framed.setSpeedLimit( res.speedLimit );  // Float32;
+      framed.setSpeedLimitDistance( res.speedLimitDistance );  // raw_target_speed_map_dist Float32;
+      framed.setSafetySign( res.safetySign ); // map_sign Float32;
+      framed.setRoadCurvature( res.roadCurvature ); // road_curvature Float32;
+      framed.setMapEnable( res.mapEnable );
+      framed.setMapValid( res.mapValid );
 
       oTime++;
       if ( oValue == 0 && oTime > 15 )
@@ -129,14 +126,7 @@ int main() {
         res.speedLimitDistance = 0;
         res.speedLimit = 0;
         res.safetySign = 0;
-        framed.setSpeedLimitDistance( res.speedLimitDistance );  // raw_target_speed_map_dist Float32;
-        framed.setSpeedLimit( res.speedLimit );  // Float32;
-        framed.setSafetySign( res.safetySign ); // map_sign Float32;
-        framed.setRoadCurvature( res.roadCurvature ); // road_curvature Float32;
-        printf("0: spd = %f    spddist = %f    rc = %f    ss = %f\n", res.speedLimit, res.speedLimitDistance, res.roadCurvature, res.safetySign); 
       }
-      framed.setMapEnable( res.mapEnable );
-      framed.setMapValid( res.mapValid );
       
       
      // if( opkr )
