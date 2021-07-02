@@ -79,37 +79,21 @@ int main() {
 
 */
       // code based from atom
-      if( strcmp( entry.tag, "opkrspdlimit" ) == 0 )
-      {
-        res.speedLimit = atoi( entry.message );
-      }
-      else if( strcmp( entry.tag, "opkrspddist" ) == 0 )
+      if( strcmp( entry.tag, "opkrspddist" ) == 0 )
       {
         res.speedLimitDistance = atoi( entry.message );
       }
-      else if( strcmp( entry.tag, "opkrsigntype" ) == 0 )
+      else if( strcmp( entry.tag, "opkrspdlimit" ) == 0 )
       {
-        res.safetySign = atoi( entry.message );
+        res.speedLimit = atoi( entry.message );
       }
       else if( strcmp( entry.tag, "opkrcurvangle" ) == 0 )
       {
         res.roadCurvature = atoi( entry.message );
       }
-      else if( strcmp( entry.tag, "opkrspdlimit" ) != 0 )
+      else if( strcmp( entry.tag, "opkrsigntype" ) == 0 )
       {
-        res.speedLimit = 0;
-      }
-      else if( strcmp( entry.tag, "opkrspddist" ) != 0 )
-      {
-        res.speedLimitDistance = 0;
-      }
-      else if( strcmp( entry.tag, "opkrsigntype" ) != 0 )
-      {
-        res.safetySign = 0;
-      }
-      else if( strcmp( entry.tag, "opkrcurvangle" ) != 0 )
-      {
-        res.roadCurvature = -1;
+        res.safetySign = atoi( entry.message );
       }
 
       framed.setSpeedLimit( res.speedLimit );  // Float32;
