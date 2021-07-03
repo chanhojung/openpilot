@@ -1785,8 +1785,8 @@ SpeedLimitOffset::SpeedLimitOffset() : AbstractControl("MAP기반 제한속도 �
     auto str = QString::fromStdString(params.get("OpkrSpeedLimitOffset"));
     int value = str.toInt();
     value = value + 1;
-    if (value >= 10 ) {
-      value = 10;
+    if (value >= 20 ) {
+      value = 20;
     }
     QString values = QString::number(value);
     //QUIState::ui_state.speed_lim_off = value;
