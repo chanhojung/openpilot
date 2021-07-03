@@ -120,7 +120,7 @@ int main() {
       framed.setMapValid( res.mapValid );
 
       oTime++;
-      if ( oValue == 0 && oTime > 15 )
+      if ( oValue == 0 && oTime > 20 )
       {
         oTime = 0;
         res.speedLimitDistance = 0;

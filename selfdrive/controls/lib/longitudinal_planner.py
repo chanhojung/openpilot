@@ -261,7 +261,7 @@ class Planner():
     if self.map_enabled:
       longitudinalPlan.mapSign = float(self.map_sign)
       cam_distance_calc = 0
-      cam_distance_calc = interp(self.vego*CV.MS_TO_KPH, [30,60,100,160], [3.75,5.5,6,7])
+      cam_distance_calc = interp(self.vego*CV.MS_TO_KPH, [30,60,100,160], [3,4.5,5,6])
       consider_speed = interp((self.vego*CV.MS_TO_KPH - self.target_speed_map), [10, 30], [1, 1.3])
       if self.target_speed_map > 29 and self.target_speed_map_dist < cam_distance_calc*consider_speed*self.vego*CV.MS_TO_KPH:
         longitudinalPlan.targetSpeedCamera = float(self.target_speed_map)
