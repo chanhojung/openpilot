@@ -401,34 +401,15 @@ static void ui_draw_debug(UIState *s)
     ui_print(s, ui_viz_rx, ui_viz_ry+300, "AA:%.2f", scene.liveParams.angleOffsetAverage);
     ui_print(s, ui_viz_rx, ui_viz_ry+350, "SF:%.2f", scene.liveParams.stiffnessFactor);
 
-    ui_print(s, ui_viz_rx, ui_viz_ry+400, "AD:%.2f", scene.lateralPlan.steerActuatorDelay);
+    ui_print(s, ui_viz_rx, ui_viz_ry+400, "AD:%.2f", scene.steer_actuator_delay);
     ui_print(s, ui_viz_rx, ui_viz_ry+450, "SC:%.2f", scene.lateralPlan.steerRateCost);
     ui_print(s, ui_viz_rx, ui_viz_ry+500, "OS:%.2f", abs(scene.output_scale));
-    ui_print(s, ui_viz_rx, ui_viz_ry+550, "Prob:");
-    ui_print(s, ui_viz_rx, ui_viz_ry+600, "%.2f|%.2f", scene.lateralPlan.lProb, scene.lateralPlan.rProb);
-    if (s->scene.longitudinal_control) {
-      if (scene.long_plan_source == 0) {
-        ui_print(s, ui_viz_rx, ui_viz_ry+650, "LP:none");
-      } else if (scene.long_plan_source == 1) {
-        ui_print(s, ui_viz_rx, ui_viz_ry+650, "LP:cruise");
-      } else if (scene.long_plan_source == 2) {
-        ui_print(s, ui_viz_rx, ui_viz_ry+650, "LP:mpc1");
-      } else if (scene.long_plan_source == 3) {
-        ui_print(s, ui_viz_rx, ui_viz_ry+650, "LP:mpc2");
-      } else if (scene.long_plan_source == 4) {
-        ui_print(s, ui_viz_rx, ui_viz_ry+650, "LP:mpc3");
-      } else if (scene.long_plan_source == 5) {
-        ui_print(s, ui_viz_rx, ui_viz_ry+650, "LP:model");
-      }
-      if (s->scene.map_is_running) {
-        ui_print(s, ui_viz_rx, ui_viz_ry+700, "MS:%.0f", scene.mapSign);
-        ui_print(s, ui_viz_rx, ui_viz_ry+750, "RC:%.0f", scene.liveMapData.opkrcurveangle);
-      }
-    } else {
-      if (s->scene.map_is_running) {
-        ui_print(s, ui_viz_rx, ui_viz_ry+650, "MS:%.0f", scene.mapSign);
-        ui_print(s, ui_viz_rx, ui_viz_ry+700, "RC:%.0f", scene.liveMapData.opkrcurveangle);
-      }
+    ui_print(s, ui_viz_rx, ui_viz_ry+550, "%.2f|%.2f", scene.lateralPlan.lProb, scene.lateralPlan.rProb);
+    if (s->scene.map_is_running) {
+      if (s->scene.mapSign) ui_print(s, ui_viz_rx, ui_viz_ry+600, "S:%.0f", scene.mapSign);
+      if (s->scene.limitSpeedCameraDist) ui_print(s, ui_viz_rx, ui_viz_ry+650, "D:%.0f", scene.limitSpeedCameraDist);
+      if (s->scene.liveMapData.opkrturninfo) ui_print(s, ui_viz_rx, ui_viz_ry+700, "T:%.0f", scene.liveMapData.opkrturninfo);
+      if (s->scene.liveMapData.opkrdisttoturn) ui_print(s, ui_viz_rx, ui_viz_ry+750, "D:%.0f", scene.liveMapData.opkrdisttoturn);
     }
     nvgFontSize(s->vg, 40);
     nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
@@ -708,6 +689,9 @@ static void ui_draw_vision_event(UIState *s) {
     else if (s->scene.limitSpeedCamera < 110) {ui_draw_image(s, {img_speedlimit_x, img_speedlimit_y, img_speedlimit_size, img_speedlimit_size}, "speed_100", img_speedlimit_alpha);}
     else if (s->scene.limitSpeedCamera < 120) {ui_draw_image(s, {img_speedlimit_x, img_speedlimit_y, img_speedlimit_size, img_speedlimit_size}, "speed_110", img_speedlimit_alpha);}
   }
+  if ((s->scene.mapSign == 195 || s->scene.mapSign == 197) && s->scene.limitSpeedCamera == 0 && s->scene.limitSpeedCameraDist != 0 && !s->scene.comma_stock_ui) {
+    {ui_draw_image(s, {s->viz_rect.centerX() - 500/2, s->viz_rect.centerY() - 500/2, 500, 500}, "speed_var", 0.25f);}
+  }
   
   //draw compass by opkr
   if (s->scene.gpsAccuracyUblox != 0.00 && !s->scene.comma_stock_ui) {
@@ -985,37 +969,6 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w )
     snprintf(uom_str, sizeof(uom_str), "   °");
 
     bb_h +=bb_ui_draw_measure(s, val_str, uom_str, "현재조향각",
-        bb_rx, bb_ry, bb_uom_dx,
-        val_color, lab_color, uom_color,
-        value_fontSize, label_fontSize, uom_fontSize );
-    bb_ry = bb_y + bb_h;
-  }
-
-  //add desired steering angle
-  if (true) {
-    char val_str[16];
-    char uom_str[6];
-    //std::string desire_val;
-    NVGcolor val_color = COLOR_WHITE_ALPHA(200);
-    if (scene->controls_state.getEnabled()) {
-      //show Orange if more than 30 degrees
-      //show red if  more than 50 degrees
-      if(((int)(s->scene.angleSteersDes) < -30) || ((int)(scene->angleSteersDes) > 30)) {
-        val_color = COLOR_WHITE_ALPHA(200);
-      }
-      if(((int)(s->scene.angleSteersDes) < -50) || ((int)(scene->angleSteersDes) > 50)) {
-        val_color = COLOR_WHITE_ALPHA(200);
-      }
-      // steering is in degrees
-      snprintf(val_str, sizeof(val_str), "%.1f°",(s->scene.angleSteersDes));
-      //desire_val = std::to_string(int(s->scene.angleSteersDes*10)/10) + "°";
-    } else {
-      snprintf(val_str, sizeof(val_str), "-");
-      //desire_val = "-";
-    }
-    snprintf(uom_str, sizeof(uom_str), "   °");
-
-    bb_h +=bb_ui_draw_measure(s, val_str, uom_str, "필요조향각",
         bb_rx, bb_ry, bb_uom_dx,
         val_color, lab_color, uom_color,
         value_fontSize, label_fontSize, uom_fontSize );
@@ -1392,6 +1345,7 @@ void ui_nvg_init(UIState *s) {
     {"speed_90", "../assets/img_90_speedahead.png"},
     {"speed_100", "../assets/img_100_speedahead.png"},
     {"speed_110", "../assets/img_110_speedahead.png"},
+    {"speed_var", "../assets/img_var_speedahead.png"},
     {"car_left", "../assets/img_car_left.png"},
     {"car_right", "../assets/img_car_right.png"},
     {"compass", "../assets/img_compass.png"},

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import os
 import math
 import numpy as np
 from common.params import Params
@@ -85,8 +84,6 @@ class Planner():
     self.first_loop = True
 
     self.target_speed_map = 0
-    self.target_speed_map_prev = 0
-    self.target_speed_map_counter = 0
     self.target_speed_map_dist = 0
     self.target_speed_map_dist_prev = 0
     self.target_speed_map_block = False
@@ -153,11 +150,11 @@ class Planner():
     if self.map_enabled and v_ego > 0.3:
       self.map_sign = sm['liveMapData'].safetySign
       self.target_speed_map_dist = sm['liveMapData'].speedLimitDistance
-      if self.target_speed_map_dist_prev != self.target_speed_map_dist: 
+      if self.target_speed_map_dist_prev != self.target_speed_map_dist:
         self.target_speed_map_dist_prev = self.target_speed_map_dist
         self.target_speed_map = sm['liveMapData'].speedLimit
         if self.target_speed_map > 29:
-          if self.target_speed_map_dist > 1001:
+          if self.target_speed_map_dist > 1250:
             self.target_speed_map_block = True
         else:
           self.target_speed_map_block = False
@@ -261,8 +258,8 @@ class Planner():
     if self.map_enabled:
       longitudinalPlan.mapSign = float(self.map_sign)
       cam_distance_calc = 0
-      cam_distance_calc = interp(self.vego*CV.MS_TO_KPH, [30,60,100,160], [3,4.5,5,6])
-      consider_speed = interp((self.vego*CV.MS_TO_KPH - self.target_speed_map), [10, 30], [1, 1.3])
+      cam_distance_calc = interp(self.vego*CV.MS_TO_KPH, [30,60,100,160], [3,4,4.75,5.5])
+      consider_speed = interp((self.vego*CV.MS_TO_KPH - self.target_speed_map), [10, 30], [1, 1.4])
       if self.target_speed_map > 29 and self.target_speed_map_dist < cam_distance_calc*consider_speed*self.vego*CV.MS_TO_KPH:
         longitudinalPlan.targetSpeedCamera = float(self.target_speed_map)
         longitudinalPlan.targetSpeedCameraDist = float(self.target_speed_map_dist)
@@ -278,6 +275,10 @@ class Planner():
         longitudinalPlan.targetSpeedCameraDist = float(self.target_speed_map_dist)
         longitudinalPlan.onSpeedControl = True
       elif self.target_speed_map > 29 and self.target_speed_map_dist < 600.:
+        longitudinalPlan.targetSpeedCamera = float(self.target_speed_map)
+        longitudinalPlan.targetSpeedCameraDist = float(self.target_speed_map_dist)
+        longitudinalPlan.onSpeedControl = False
+      elif self.target_speed_map == 0 and self.target_speed_map_dist != 0.:
         longitudinalPlan.targetSpeedCamera = float(self.target_speed_map)
         longitudinalPlan.targetSpeedCameraDist = float(self.target_speed_map_dist)
         longitudinalPlan.onSpeedControl = False

@@ -38,7 +38,7 @@ class LatControlPID():
                           k_f=self.steerKf, pos_limit=1.0)
       self.mpc_frame = 0
 
-  def update(self, active, CS, CP, VM, params, lat_plan):
+  def update(self, active, CS, CP, VM, params, desired_curvature, desired_curvature_rate):
     if self.live_tune_enabled:
       self.live_tune(CP)
 
@@ -46,7 +46,7 @@ class LatControlPID():
     pid_log.steeringAngleDeg = float(CS.steeringAngleDeg)
     pid_log.steeringRateDeg = float(CS.steeringRateDeg)
 
-    angle_steers_des_no_offset = math.degrees(VM.get_steer_from_curvature(-lat_plan.curvature, CS.vEgo))
+    angle_steers_des_no_offset = math.degrees(VM.get_steer_from_curvature(-desired_curvature, CS.vEgo))
     angle_steers_des = angle_steers_des_no_offset + params.angleOffsetDeg
 
     if CS.vEgo < 0.3 or not active:
@@ -77,4 +77,4 @@ class LatControlPID():
       pid_log.output = output_steer
       pid_log.saturated = bool(self.pid.saturated)
 
-    return output_steer, 0, pid_log
+    return output_steer, angle_steers_des, pid_log
