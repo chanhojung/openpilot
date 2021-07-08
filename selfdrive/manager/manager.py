@@ -136,6 +136,9 @@ def manager_init():
     ("SteerWarningFix", "0"),
     ("OpkrRunNaviOnBoot", "0"),
     ("OpkrApksEnable", "0"),
+    ("CruiseGap2", "12"),
+    ("CruiseGap3", "15"),
+    ("CruiseGap4", "20"),
   ]
   if not PC:
     default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))

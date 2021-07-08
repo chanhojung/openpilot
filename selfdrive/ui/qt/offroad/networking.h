@@ -30,8 +30,6 @@ private:
   WifiManager *wifi = nullptr;
   QVBoxLayout* main_layout;
 
-  bool tetheringEnabled;
-
 signals:
   void connectToNetwork(const Network &n);
 
@@ -46,14 +44,13 @@ public:
 
 private:
   LabelControl* ipLabel;
-  ButtonControl* editPasswordButton;
   WifiManager* wifi = nullptr;
 
 signals:
   void backPress();
 
 public slots:
-  void toggleTethering(bool enable);
+  void toggleTethering(bool enabled);
   void refresh();
 };
 
@@ -67,16 +64,13 @@ private:
   QStackedLayout* main_layout = nullptr; // nm_warning, wifiScreen, advanced
   QWidget* wifiScreen = nullptr;
   AdvancedNetworking* an = nullptr;
-  bool ui_setup_complete = false;
   bool show_advanced;
 
   WifiUI* wifiWidget;
   WifiManager* wifi = nullptr;
-  void attemptInitialization();
-  void requestScan();
 
 public slots:
-  void refreshSlot();
+  void refresh();
 
 private slots:
   void connectToNetwork(const Network &n);

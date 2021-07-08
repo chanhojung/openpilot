@@ -111,9 +111,9 @@ class Spdctrl(SpdController):
         else:
             d_delta2 = 0
  
-        if CS.driverAcc_time and not self.map_decel_only: #운전자가 가속페달 밟으면 크루즈 설정속도를 현재속도+3로 동기화
-            if int(CS.VSetDis) < int(round(CS.clu_Vanz)) + 3:
-              lead_set_speed = int(round(CS.clu_Vanz)) + 3
+        if CS.driverAcc_time and not self.map_decel_only: #운전자가 가속페달 밟으면 크루즈 설정속도를 현재속도+1로 동기화
+            if int(CS.VSetDis) < int(round(CS.clu_Vanz)) + 1:
+              lead_set_speed = int(round(CS.clu_Vanz)) + 1
               self.seq_step_debug = "운전자가속"
               lead_wait_cmd = 10
         elif int(round(self.target_speed)) < int(CS.VSetDis) and self.map_enable and ((int(round(self.target_speed)) < int(round(self.cruise_set_speed_kph))) and self.target_speed != 0):

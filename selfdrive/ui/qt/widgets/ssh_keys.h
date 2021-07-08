@@ -423,7 +423,7 @@ class ApksEnableToggle : public ToggleControl {
   Q_OBJECT
 
 public:
-  ApksEnableToggle() : ToggleControl("APKs 사용", "어플 사용을 위해 apk환경을 활성화합니다. 활성화시 apk 파일들(소프트키, 티맵, 믹스플로러 등)이 자동 인스톨 됩니다.", "../assets/offroad/icon_shell.png", Params().getBool("OpkrApksEnable")) {
+  ApksEnableToggle() : ToggleControl("APKs 사용", "어플 사용을 위해 apk환경을 활성화합니다. 활성화시 apk 파일들(소프트키, 맵피, 믹스플로러 등)이 자동 인스톨 됩니다.", "../assets/offroad/icon_shell.png", Params().getBool("OpkrApksEnable")) {
     QObject::connect(this, &ApksEnableToggle::toggleFlipped, [=](int state) {
       char value = state ? '1' : '0';
       Params().put("OpkrApksEnable", &value, 1);
@@ -1330,4 +1330,27 @@ private:
   Params params;
   
   void refresh();
+};
+
+class CruiseGapTR : public AbstractControl {
+  Q_OBJECT
+
+public:
+  CruiseGapTR();
+
+private:
+  QPushButton btn2;
+  QPushButton btn3;
+  QPushButton btn4;
+  QLabel label2;
+  QLabel label3;
+  QLabel label4;
+  QLabel label2a;
+  QLabel label3a;
+  QLabel label4a;
+  Params params;
+  
+  void refresh2();
+  void refresh3();
+  void refresh4();
 };
