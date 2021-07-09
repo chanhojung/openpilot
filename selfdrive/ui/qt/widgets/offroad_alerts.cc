@@ -110,7 +110,6 @@ void OffroadAlert::refresh() {
 
 void OffroadAlert::updateAlerts() {
   alertCount = 0;
-  updateAvailable = params.getBool("UpdateAvailable");
   if (QString::fromStdString(params.get("DongleId")) == "maintenance") {
     maintenance = true;
   } else {
@@ -127,4 +126,5 @@ void OffroadAlert::updateAlerts() {
       label->setText("");
     }
   }
+  updateAvailable = params.getBool("UpdateAvailable") && alertCount < 1;
 }

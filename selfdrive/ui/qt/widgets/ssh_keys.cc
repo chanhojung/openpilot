@@ -36,7 +36,7 @@ SshControl::SshControl() : AbstractControl("SSH 키 설정", "경고: 이렇게 
 
   QObject::connect(&btn, &QPushButton::released, [=]() {
     if (btn.text() == "설정") {
-      QString username = InputDialog::getText("GitHub 아이디를 입력하세요");
+      QString username = InputDialog::getText("GitHub 아이디를 입력하세요", this);
       if (username.length() > 0) {
         btn.setText("로딩중");
         btn.setEnabled(false);
@@ -260,7 +260,7 @@ CarForceSet::CarForceSet() : AbstractControl("차량강제인식", "핑거프린
 
   QObject::connect(&btnc, &QPushButton::released, [=]() {
     if (btnc.text() == "설정") {
-      carname = InputDialog::getText("차량명은 이전메뉴 차량강제인식을 클릭하여 확인");
+      carname = InputDialog::getText("차량명은 이전메뉴 차량강제인식을 클릭하여 확인", this);
       if (carname.length() > 0) {
         btnc.setText("완료");
         btnc.setEnabled(false);
@@ -3838,4 +3838,292 @@ void DcGain::refresh() {
   label.setText(QString::fromStdString(valuefs.toStdString()));
   btnminus.setText("－");
   btnplus.setText("＋");
+}
+
+CruiseGapTR::CruiseGapTR() : AbstractControl("크루즈갭", "크루즈갭에 따른 차간거리(TR)를 조절 합니다. TR은 앞차와 추돌시간(초)을 말하며 커질수록 앞차와 더 먼 간격을 유지합니다.", "") {
+  QString dtr = QString::fromStdString(params.get("DynamicTR"));
+  if (dtr == "0") {
+    btn1.setStyleSheet(R"(
+      padding: -10;
+      border-radius: 35px;
+      font-size: 30px;
+      font-weight: 500;
+      color: #E4E4E4;
+      background-color: #393939;
+    )");
+    btn2.setStyleSheet(R"(
+      padding: -10;
+      border-radius: 35px;
+      font-size: 30px;
+      font-weight: 500;
+      color: #E4E4E4;
+      background-color: #393939;
+    )");
+    btn3.setStyleSheet(R"(
+      padding: -10;
+      border-radius: 35px;
+      font-size: 30px;
+      font-weight: 500;
+      color: #E4E4E4;
+      background-color: #393939;
+    )");
+    btn4.setStyleSheet(R"(
+      padding: -10;
+      border-radius: 35px;
+      font-size: 30px;
+      font-weight: 500;
+      color: #E4E4E4;
+      background-color: #393939;
+    )");
+  } else {
+    btn1.setStyleSheet(R"(
+      padding: 0;
+      border-radius: 50px;
+      font-size: 35px;
+      font-weight: 500;
+      color: #E4E4E4;
+      background-color: #393939;
+    )");
+    btn2.setStyleSheet(R"(
+      padding: 0;
+      border-radius: 50px;
+      font-size: 35px;
+      font-weight: 500;
+      color: #E4E4E4;
+      background-color: #393939;
+    )");
+    btn3.setStyleSheet(R"(
+      padding: 0;
+      border-radius: 50px;
+      font-size: 35px;
+      font-weight: 500;
+      color: #E4E4E4;
+      background-color: #393939;
+    )");
+    btn4.setStyleSheet(R"(
+      padding: 0;
+      border-radius: 50px;
+      font-size: 35px;
+      font-weight: 500;
+      color: #E4E4E4;
+      background-color: #393939;
+    )");
+  }
+  label1.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+  label1.setStyleSheet("color: #e0e879");
+  label2.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+  label2.setStyleSheet("color: #e0e879");
+  label3.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+  label3.setStyleSheet("color: #e0e879");
+  label4.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+  label4.setStyleSheet("color: #e0e879");
+  label1a.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+  label2a.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+  label3a.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+  label4a.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+
+  if (dtr != "1") {
+    hlayout->addWidget(&label1a);
+    hlayout->addWidget(&label1);
+    if (dtr == "0") {
+      btn1.setFixedSize(60, 100);
+      label1a.setText("1:");
+    } else {
+      btn1.setFixedSize(100, 100);
+      label1a.setText("1칸:");
+    }
+    hlayout->addWidget(&btn1);
+  }
+  if (dtr != "2") {
+    hlayout->addWidget(&label2a);
+    hlayout->addWidget(&label2);
+    if (dtr == "0") {
+      btn2.setFixedSize(60, 100);
+      label2a.setText("2:");
+    } else {
+      btn2.setFixedSize(100, 100);
+      label2a.setText("2칸:");
+    }
+    hlayout->addWidget(&btn2);
+  }
+  if (dtr != "3") {
+    hlayout->addWidget(&label3a);
+    hlayout->addWidget(&label3);
+    if (dtr == "0") {
+      btn3.setFixedSize(60, 100);
+      label3a.setText("3:");
+    } else {
+      btn3.setFixedSize(100, 100);
+      label3a.setText("3칸:");
+    }
+    hlayout->addWidget(&btn3);
+  }
+  if (dtr != "4") {
+    hlayout->addWidget(&label4a);
+    hlayout->addWidget(&label4);
+    if (dtr == "0") {
+      btn4.setFixedSize(60, 100);
+      label4a.setText("4:");
+    } else {
+      btn4.setFixedSize(100, 100);
+      label4a.setText("4칸:");
+    }
+    hlayout->addWidget(&btn4);
+  }
+
+  QObject::connect(&btn1, &QPushButton::released, [=]() {
+    auto str = QString::fromStdString(params.get("CruiseGap1"));
+    int value = str.toInt();
+    value = value + 1;
+    if (value >= 13 ) {
+      value = 7;
+    }
+    QString values = QString::number(value);
+    params.put("CruiseGap1", values.toStdString());
+    refresh1();
+  });
+
+  QObject::connect(&btn2, &QPushButton::released, [=]() {
+    auto str = QString::fromStdString(params.get("CruiseGap2"));
+    int value = str.toInt();
+    value = value + 1;
+    if (value >= 16 ) {
+      value = 8;
+    }
+    QString values = QString::number(value);
+    params.put("CruiseGap2", values.toStdString());
+    refresh2();
+  });
+  
+  QObject::connect(&btn3, &QPushButton::released, [=]() {
+    auto str = QString::fromStdString(params.get("CruiseGap3"));
+    int value = str.toInt();
+    value = value + 1;
+    if (value >= 20 ) {
+      value = 10;
+    }
+    QString values = QString::number(value);
+    params.put("CruiseGap3", values.toStdString());
+    refresh3();
+  });
+
+  QObject::connect(&btn4, &QPushButton::released, [=]() {
+    auto str = QString::fromStdString(params.get("CruiseGap4"));
+    int value = str.toInt();
+    value = value + 1;
+    if (value >= 30 ) {
+      value = 12;
+    }
+    QString values = QString::number(value);
+    params.put("CruiseGap4", values.toStdString());
+    refresh4();
+  });
+
+  refresh1();
+  refresh2();
+  refresh3();
+  refresh4();
+}
+
+void CruiseGapTR::refresh1() {
+  auto strs = QString::fromStdString(params.get("CruiseGap1"));
+  int valuei = strs.toInt();
+  float valuef = valuei * 0.1;
+  QString valuefs = QString::number(valuef);
+  label1.setText(QString::fromStdString(valuefs.toStdString()));
+  btn1.setText("▲");
+}
+void CruiseGapTR::refresh2() {
+  auto strs = QString::fromStdString(params.get("CruiseGap2"));
+  int valuei = strs.toInt();
+  float valuef = valuei * 0.1;
+  QString valuefs = QString::number(valuef);
+  label2.setText(QString::fromStdString(valuefs.toStdString()));
+  btn2.setText("▲");
+}
+void CruiseGapTR::refresh3() {
+  auto strs = QString::fromStdString(params.get("CruiseGap3"));
+  int valuei = strs.toInt();
+  float valuef = valuei * 0.1;
+  QString valuefs = QString::number(valuef);
+  label3.setText(QString::fromStdString(valuefs.toStdString()));
+  btn3.setText("▲");
+}
+void CruiseGapTR::refresh4() {
+  auto strs = QString::fromStdString(params.get("CruiseGap4"));
+  int valuei = strs.toInt();
+  float valuef = valuei * 0.1;
+  QString valuefs = QString::number(valuef);
+  label4.setText(QString::fromStdString(valuefs.toStdString()));
+  btn4.setText("▲");
+}
+
+DynamicTR::DynamicTR() : AbstractControl("다이나믹TR 사용(갭할당)", "DynamicTR을 사용 및 해당갭에 할당합니다.", "../assets/offroad/icon_shell.png") {
+
+  label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
+  label.setStyleSheet("color: #e0e879");
+  hlayout->addWidget(&label);
+
+  btnminus.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+  btnplus.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+  btnminus.setFixedSize(150, 100);
+  btnplus.setFixedSize(150, 100);
+  hlayout->addWidget(&btnminus);
+  hlayout->addWidget(&btnplus);
+
+  QObject::connect(&btnminus, &QPushButton::released, [=]() {
+    auto str = QString::fromStdString(params.get("DynamicTR"));
+    int value = str.toInt();
+    value = value - 1;
+    if (value <= 0 ) {
+      value = 0;
+    }
+    QString values = QString::number(value);
+    params.put("DynamicTR", values.toStdString());
+    refresh();
+  });
+  
+  QObject::connect(&btnplus, &QPushButton::released, [=]() {
+    auto str = QString::fromStdString(params.get("DynamicTR"));
+    int value = str.toInt();
+    value = value + 1;
+    if (value >= 4 ) {
+      value = 4;
+    }
+    QString values = QString::number(value);
+    params.put("DynamicTR", values.toStdString());
+    refresh();
+  });
+  refresh();
+}
+
+void DynamicTR::refresh() {
+  QString option = QString::fromStdString(params.get("DynamicTR"));
+  if (option == "0") {
+    label.setText(QString::fromStdString("사용안함"));
+  } else if (option == "1") {
+    label.setText(QString::fromStdString("■"));
+  } else if (option == "2") {
+    label.setText(QString::fromStdString("■■"));
+  } else if (option == "3") {
+    label.setText(QString::fromStdString("■■■"));
+  } else {
+    label.setText(QString::fromStdString("■■■■"));
+  }
+  btnminus.setText("◀");
+  btnplus.setText("▶");
 }

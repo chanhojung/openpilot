@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import datetime
-import json
 import os
 import subprocess
 import time
@@ -12,7 +11,6 @@ from smbus2 import SMBus
 
 import cereal.messaging as messaging
 from cereal import log
-from common.basedir import BASEDIR
 from common.filter_simple import FirstOrderFilter
 from common.numpy_fast import clip, interp
 from common.params import Params, ParamKeyType
@@ -223,15 +221,6 @@ def thermald_thread():
           pass
     cloudlog.event("CPR", data=cpr_data)
 
-    # modem logging
-    try:
-      binpath = os.path.join(BASEDIR, "selfdrive/hardware/eon/rat")
-      out = subprocess.check_output([binpath], encoding='utf8').strip()
-      dat = json.loads(out.splitlines()[1])
-      cloudlog.event("NV data", data=dat)
-    except Exception:
-      pass
-
   # sound trigger
   sound_trigger = 1
   opkrAutoShutdown = 0
@@ -349,6 +338,7 @@ def thermald_thread():
     msg.deviceState.freeSpacePercent = get_available_percent(default=100.0)
     msg.deviceState.memoryUsagePercent = int(round(psutil.virtual_memory().percent))
     msg.deviceState.cpuUsagePercent = int(round(psutil.cpu_percent()))
+    msg.deviceState.gpuUsagePercent = int(round(HARDWARE.get_gpu_usage_percent()))
     msg.deviceState.networkType = network_type
     msg.deviceState.networkStrength = network_strength
     if network_info is not None:

@@ -67,7 +67,7 @@ def manager_init():
     ("Scale", "1500"),
     ("LqrKi", "15"),
     ("DcGain", "27"),
-    ("IgnoreZone", "1"),
+    ("IgnoreZone", "0"),
     ("PidKp", "20"),
     ("PidKi", "40"),
     ("PidKd", "150"),
@@ -78,8 +78,8 @@ def manager_init():
     ("SteerActuatorDelayAdj", "20"),
     ("SteerRateCostAdj", "35"),
     ("SteerLimitTimerAdj", "40"),
-    ("TireStiffnessFactorAdj", "85"),
-    ("SteerMaxBaseAdj", "300"),
+    ("TireStiffnessFactorAdj", "100"),
+    ("SteerMaxBaseAdj", "384"),
     ("SteerMaxAdj", "384"),
     ("SteerDeltaUpBaseAdj", "3"),
     ("SteerDeltaUpAdj", "3"),
@@ -136,6 +136,11 @@ def manager_init():
     ("SteerWarningFix", "0"),
     ("OpkrRunNaviOnBoot", "0"),
     ("OpkrApksEnable", "0"),
+    ("CruiseGap1", "10"),
+    ("CruiseGap2", "12"),
+    ("CruiseGap3", "15"),
+    ("CruiseGap4", "20"),
+    ("DynamicTR", "2"),
   ]
   if not PC:
     default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))

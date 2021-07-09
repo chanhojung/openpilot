@@ -557,7 +557,7 @@ CHECKSUM = {
 
 FEATURES = {
   # Use Cluster for Gear Selection, rather than Transmission
-  "use_cluster_gears": {CAR.AVANTE, CAR.KONA, CAR.I30, CAR.K7, CAR.GRANDEUR_IG, CAR.GRANDEUR_IG_FL, CAR.MOHAVE},
+  "use_cluster_gears": {CAR.AVANTE, CAR.KONA, CAR.I30, CAR.K7, CAR.GRANDEUR_IG, CAR.GRANDEUR_IG_FL},
   # Use TCU Message for Gear Selection
   "use_tcu_gears": {CAR.K5, CAR.SONATA_LF, CAR.VELOSTER, CAR.SONATA_LF_TURBO},
   # Use E_GEAR Message for Gear Selection
@@ -572,8 +572,8 @@ FEATURES = {
   "use_fca": {CAR.GRANDEUR_IG_FL_HEV, CAR.GRANDEUR_IG_FL, CAR.SONATA, CAR.AVANTE, CAR.I30, CAR.PALISADE, CAR.GENESIS_G70, CAR.KONA_HEV, CAR.SELTOS, CAR.MOHAVE},
 }
 
-ELEC_VEH = set([CAR.IONIQ_EV, CAR.KONA_EV, CAR.NIRO_EV, CAR.NEXO, CAR.SOUL_EV])
-HYBRID_VEH = set([CAR.K5_HEV, CAR.IONIQ_HEV, CAR.SONATA_HEV, CAR.SONATA_LF_HEV, CAR.K7_HEV, CAR.GRANDEUR_IG_HEV, CAR.GRANDEUR_IG_FL_HEV, CAR.NIRO_HEV, CAR.KONA_HEV])
+HYBRID_CAR = set([CAR.K5_HEV, CAR.IONIQ_HEV, CAR.SONATA_HEV, CAR.SONATA_LF_HEV, CAR.K7_HEV, CAR.GRANDEUR_IG_HEV, CAR.GRANDEUR_IG_FL_HEV, CAR.NIRO_HEV, CAR.KONA_HEV])
+EV_CAR = set([CAR.IONIQ_EV, CAR.KONA_EV, CAR.NIRO_EV, CAR.NEXO, CAR.SOUL_EV])
 
 DBC = {
   # genesis
@@ -585,34 +585,34 @@ DBC = {
   CAR.AVANTE: dbc_dict('hyundai_kia_generic', None),
   CAR.I30: dbc_dict('hyundai_kia_generic', None),
   CAR.SONATA: dbc_dict('hyundai_kia_generic', None),
-  CAR.SONATA_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.SONATA_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.SONATA_LF: dbc_dict('hyundai_kia_generic', None),
   CAR.SONATA_LF_TURBO: dbc_dict('hyundai_kia_generic', None),
-  CAR.SONATA_LF_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.SONATA_LF_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.KONA: dbc_dict('hyundai_kia_generic', None),
   CAR.KONA_EV: dbc_dict('hyundai_kia_generic', None),
-  CAR.KONA_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.KONA_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.IONIQ_EV: dbc_dict('hyundai_kia_generic', None),
-  CAR.IONIQ_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.IONIQ_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.SANTA_FE: dbc_dict('hyundai_kia_generic', None),
   CAR.PALISADE: dbc_dict('hyundai_kia_generic', None),
   CAR.VELOSTER: dbc_dict('hyundai_kia_generic', None),
   CAR.GRANDEUR_IG: dbc_dict('hyundai_kia_generic', None),
-  CAR.GRANDEUR_IG_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.GRANDEUR_IG_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.GRANDEUR_IG_FL: dbc_dict('hyundai_kia_generic', None),
-  CAR.GRANDEUR_IG_FL_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.GRANDEUR_IG_FL_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.NEXO: dbc_dict('hyundai_kia_generic_nexo', None),
   # kia
   CAR.K3: dbc_dict('hyundai_kia_generic', None),
   CAR.K5: dbc_dict('hyundai_kia_generic', None),
-  CAR.K5_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.K5_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.SPORTAGE: dbc_dict('hyundai_kia_generic', None),
   CAR.SORENTO: dbc_dict('hyundai_kia_generic', None),
   CAR.STINGER: dbc_dict('hyundai_kia_generic', None),
   CAR.NIRO_EV: dbc_dict('hyundai_kia_generic', None),
-  CAR.NIRO_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.NIRO_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.K7: dbc_dict('hyundai_kia_generic', None),
-  CAR.K7_HEV: dbc_dict('hyundai_kia_generic_hybrid', None),
+  CAR.K7_HEV: dbc_dict('hyundai_kia_generic', None),
   CAR.SELTOS: dbc_dict('hyundai_kia_generic', None),
   CAR.SOUL_EV: dbc_dict('hyundai_kia_generic', None),
   CAR.MOHAVE: dbc_dict('hyundai_kia_generic', None),

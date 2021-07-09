@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from cereal import car
 from selfdrive.config import Conversions as CV
-from selfdrive.car.hyundai.values import CAR, Buttons
+from selfdrive.car.hyundai.values import CAR, Buttons, EV_CAR, HYBRID_CAR
 from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, gen_empty_fingerprint
 from selfdrive.car.interfaces import CarInterfaceBase
 from common.params import Params
@@ -216,23 +216,22 @@ class CarInterface(CarInterfaceBase):
 
     # TODO: adjust?
     ret.gasMaxBP = [0., 4., 9., 17., 23., 31.]    # m/s
-    ret.gasMaxV = [1.5, 1.1, 0.6, 0.5, 0.4, 0.3]    # max gas allowed
+    ret.gasMaxV = [1.5, 1.35, 0.8, 0.5, 0.4, 0.3]    # max gas allowed
     ret.brakeMaxBP = [0., 8.]  # m/s
     ret.brakeMaxV = [0.7, 3.0]   # max brake allowed
 
     ret.longitudinalTuning.kpBP = [0., 4., 9., 17., 23., 31.]
-    ret.longitudinalTuning.kpV = [0.57, 0.71, 0.54, 0.36, 0.31, 0.27]
+    ret.longitudinalTuning.kpV = [0.62, 0.72, 0.54, 0.29, 0.26, 0.24]
     ret.longitudinalTuning.kiBP = [0., 4., 9., 17., 23., 31.]
-    ret.longitudinalTuning.kiV = [0.015, 0.023, 0.024, 0.02, 0.02, 0.02]
+    ret.longitudinalTuning.kiV = [0.017, 0.023, 0.024, 0.0175, 0.0175, 0.0175]
 
     ret.longitudinalTuning.deadzoneBP = [0., 4., 31.]
     ret.longitudinalTuning.deadzoneV = [0., 0.1, 0.2]
     ret.longitudinalTuning.kdBP = [0., 4., 9., 17., 23., 31.]
-    ret.longitudinalTuning.kdV = [0.65, 0.75, 0.7, 0.7, 0.7, 0.65]
+    ret.longitudinalTuning.kdV = [0.65, 0.75, 0.7, 0.6, 0.5, 0.5]
     ret.longitudinalTuning.kfBP = [0., 4., 9., 17., 23., 31.]
-    ret.longitudinalTuning.kfV = [1., 1., 1., 1., 1., 1.]
+    ret.longitudinalTuning.kfV = [1., 1.05, 1.05, 1., 1., 1.]
 
-    ret.enableCamera = True
     ret.enableBsm = 0x58b in fingerprint[0]
 
     ret.stoppingControl = True
@@ -262,6 +261,12 @@ class CarInterface(CarInterfaceBase):
     # set safety_hyundai_community only for non-SCC, MDPS harrness or SCC harrness cars or cars that have unknown issue
     if ret.radarOffCan or ret.mdpsBus == 1 or ret.openpilotLongitudinalControl or ret.sccBus == 1 or params.get_bool("MadModeEnabled"):
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiCommunity
+      
+    # set appropriate safety param for gas signal
+    if candidate in HYBRID_CAR:
+      ret.safetyParam = 2
+    elif candidate in EV_CAR:
+      ret.safetyParam = 1
     return ret
 
   def update(self, c, can_strings):

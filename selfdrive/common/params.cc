@@ -159,6 +159,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"CarVin", CLEAR_ON_MANAGER_START | CLEAR_ON_PANDA_DISCONNECT | CLEAR_ON_IGNITION_ON},
     {"CommunityFeaturesToggle", PERSISTENT},
     {"ControlsReady", CLEAR_ON_MANAGER_START | CLEAR_ON_PANDA_DISCONNECT | CLEAR_ON_IGNITION_ON},
+    {"CurrentRoute", CLEAR_ON_MANAGER_START | CLEAR_ON_IGNITION_ON},
     {"DisableRadar", PERSISTENT}, // WARNING: THIS DISABLES AEB
     {"EndToEndToggle", PERSISTENT},
     {"CompletedTrainingVersion", PERSISTENT},
@@ -324,6 +325,11 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"SteerWarningFix", PERSISTENT},
     {"OpkrRunNaviOnBoot", PERSISTENT},
     {"OpkrApksEnable", PERSISTENT},
+    {"CruiseGap1", PERSISTENT},
+    {"CruiseGap2", PERSISTENT},
+    {"CruiseGap3", PERSISTENT},
+    {"CruiseGap4", PERSISTENT},
+    {"DynamicTR", PERSISTENT},
 };
 
 } // namespace

@@ -1,5 +1,6 @@
 #include "selfdrive/ui/qt/home.h"
 
+#include <QDate>
 #include <QDateTime>
 #include <QHBoxLayout>
 #include <QMouseEvent>
@@ -104,6 +105,18 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
       QUIState::ui_state.scene.map_is_running = false;
       Params().put("OpkrMapEnable", "0", 1); 
     }
+    return;
+  }
+  if (QUIState::ui_state.scene.apks_enabled && QUIState::ui_state.scene.started && QUIState::ui_state.scene.map_is_running && map_return_btn.ptInRect(e->x(), e->y())) {
+    QSoundEffect effect3;
+    effect3.setSource(QUrl::fromLocalFile("/data/openpilot/selfdrive/assets/sounds/warning_1.wav"));
+    //effect1.setLoopCount(1);
+    //effect1.setLoopCount(QSoundEffect::Infinite);
+    //effect1.setVolume(0.1);
+    effect3.play();
+    QProcess::execute("am start --activity-task-on-home com.mnsoft.mappyobn/com.mnsoft.mappy.MainActivity");
+    QUIState::ui_state.scene.map_on_top = true;
+    QUIState::ui_state.scene.map_on_overlay = false;
     return;
   }
   // OPKR REC
@@ -262,7 +275,23 @@ void OffroadHome::refresh() {
     return;
   }
 
-  date->setText(QDateTime::currentDateTime().toString("yyyy년 M월 d일"));
+  QString dayofweek = "";
+  if (QDate::currentDate().dayOfWeek() == 1) {
+    dayofweek = "월요일";
+  } else if (QDate::currentDate().dayOfWeek() == 2) {
+    dayofweek = "화요일";
+  } else if (QDate::currentDate().dayOfWeek() == 3) {
+    dayofweek = "수요일";
+  } else if (QDate::currentDate().dayOfWeek() == 4) {
+    dayofweek = "목요일";
+  } else if (QDate::currentDate().dayOfWeek() == 5) {
+    dayofweek = "금요일";
+  } else if (QDate::currentDate().dayOfWeek() == 6) {
+    dayofweek = "토요일";
+  } else if (QDate::currentDate().dayOfWeek() == 7) {
+    dayofweek = "일요일";
+  }
+  date->setText(QDateTime::currentDateTime().toString("yyyy년 M월 d일 " + dayofweek));
 
   // update alerts
 

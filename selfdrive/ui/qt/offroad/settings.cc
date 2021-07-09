@@ -4,7 +4,9 @@
 #include <string>
 
 #include <QDebug>
-#include <QProcess>
+#include <QProcess> // opkr
+#include <QDateTime> // opkr
+#include <QTimer> // opkr
 
 #ifndef QCOM
 #include "selfdrive/ui/qt/offroad/networking.h"
@@ -155,7 +157,7 @@ DevicePanel::DevicePanel(QWidget* parent) : QWidget(parent) {
         qInfo() << "캘리브레이션 파라미터 유효하지 않음";
       }
     }
-    if (ConfirmationDialog::confirm(desc)) {
+    if (ConfirmationDialog::alert(desc, this)) {
       //Params().remove("CalibrationParams");
     }
   });
@@ -319,17 +321,29 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : QWidget(parent) {
   gitCommitLbl = new LabelControl("Git Commit");
   osVersionLbl = new LabelControl("OS Version");
   versionLbl = new LabelControl("Version");
-  lastUpdateLbl = new LabelControl("Last Update Check", "", "The last time openpilot successfully checked for an update. The updater only runs while the car is off.");
-  updateBtn = new ButtonControl("Check for Update", "");
+  lastUpdateLbl = new LabelControl("최근업데이트 확인", "", "");
+  updateBtn = new ButtonControl("업데이트 체크 및 적용", "");
   connect(updateBtn, &ButtonControl::released, [=]() {
     if (params.getBool("IsOffroad")) {
       const QString paramsPath = QString::fromStdString(params.getParamsPath());
       fs_watch->addPath(paramsPath + "/d/LastUpdateTime");
       fs_watch->addPath(paramsPath + "/d/UpdateFailedCount");
-      updateBtn->setText("확인중");
-      updateBtn->setEnabled(false);
     }
-    std::system("pkill -1 -f selfdrive.updated");
+    std::system("/data/openpilot/gitcommit.sh");
+    std::system("date '+%F %T' > /data/params/d/LastUpdateTime");
+    QString desc = "";
+    QString commit_local = QString::fromStdString(Params().get("GitCommit").substr(0, 10));
+    QString commit_remote = QString::fromStdString(Params().get("GitCommitRemote").substr(0, 10));
+    QString empty = "";
+    desc += QString("로    컬: %1\n리모트: %2%3%4\n").arg(commit_local, commit_remote, empty, empty);
+    if (commit_local == commit_remote) {
+      desc += QString("로컬과 리모트가 일치합니다. 업데이트가 필요 없습니다.");
+    } else {
+      desc += QString("업데이트가 있습니다. 적용하려면 확인버튼을 누르세요.");
+    }
+    if (ConfirmationDialog::confirm(desc, this)) {
+      std::system("/data/openpilot/gitpull.sh");
+    }
   });
 
   QVBoxLayout *main_layout = new QVBoxLayout(this);
@@ -341,24 +355,14 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : QWidget(parent) {
     }
   }
 
-  main_layout->addWidget(horizontal_line());
-
   main_layout->addWidget(new GitHash());
-  const char* gitpull = "/data/openpilot/gitpull.sh ''";
-  auto gitpullbtn = new ButtonControl("Git Pull", "실행");
-  QObject::connect(gitpullbtn, &ButtonControl::released, [=]() {
-    if (ConfirmationDialog::confirm("Git에서 변경사항이 있는 경우만 적용 후 재부팅 합니다. 깃내역 미반영시 로컬변경사항을 확인하세요. 진행하시겠습니까?")){
-      std::system(gitpull);
-    }
-  });
-  main_layout->addWidget(gitpullbtn);
 
   main_layout->addWidget(horizontal_line());
 
   const char* git_reset = "/data/openpilot/git_reset.sh ''";
   auto gitresetbtn = new ButtonControl("Git Reset", "실행");
   QObject::connect(gitresetbtn, &ButtonControl::released, [=]() {
-    if (ConfirmationDialog::confirm("로컬변경사항을 강제 초기화 후 리모트Git의 최신 커밋내역을 적용합니다. 진행하시겠습니까?")){
+    if (ConfirmationDialog::confirm("로컬변경사항을 강제 초기화 후 리모트Git의 최신 커밋내역을 적용합니다. 진행하시겠습니까?", this)){
       std::system(git_reset);
     }
   });
@@ -369,7 +373,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : QWidget(parent) {
   const char* gitpull_cancel = "/data/openpilot/gitpull_cancel.sh ''";
   auto gitpullcanceltbtn = new ButtonControl("Git Pull 취소", "실행");
   QObject::connect(gitpullcanceltbtn, &ButtonControl::released, [=]() {
-    if (ConfirmationDialog::confirm("GitPull 이전 상태로 되돌립니다. 진행하시겠습니까?")){
+    if (ConfirmationDialog::confirm("GitPull 이전 상태로 되돌립니다. 진행하시겠습니까?", this)){
       std::system(gitpull_cancel);
     }
   });
@@ -380,7 +384,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : QWidget(parent) {
   const char* panda_flashing = "/data/openpilot/panda_flashing.sh ''";
   auto pandaflashingtbtn = new ButtonControl("판다 플래싱", "실행");
   QObject::connect(pandaflashingtbtn, &ButtonControl::released, [=]() {
-    if (ConfirmationDialog::confirm("판다플래싱 진행중에는 판다의 녹색LED가 빠르게 깜빡입니다. 절대로 장치의 전원을 끄거나 임의로 분리하지 마십시오. 진행하시겠습니까?")) {
+    if (ConfirmationDialog::confirm("판다플래싱 진행중에는 판다의 녹색LED가 빠르게 깜빡입니다. 절대로 장치의 전원을 끄거나 임의로 분리하지 마십시오. 진행하시겠습니까?", this)) {
       std::system(panda_flashing);
     }
   });
@@ -407,9 +411,9 @@ void SoftwarePanel::showEvent(QShowEvent *event) {
 
 void SoftwarePanel::updateLabels() {
   QString lastUpdate = "";
-  auto tm = params.get("LastUpdateTime");
-  if (!tm.empty()) {
-    lastUpdate = timeAgo(QDateTime::fromString(QString::fromStdString(tm + "Z"), Qt::ISODate));
+  QString tm = QString::fromStdString(params.get("LastUpdateTime").substr(0, 19));
+  if (tm != "") {
+    lastUpdate = timeAgo(QDateTime::fromString(tm, "yyyy-MM-dd HH:mm:ss"));
   }
 
   versionLbl->setText(getBrandVersion());
@@ -459,9 +463,8 @@ QWidget * network_panel(QWidget * parent) {
   return w;
 }
 
-QWidget * user_panel(QWidget * parent) {
-  QWidget *w = new QWidget(parent);
-  QVBoxLayout *layout = new QVBoxLayout(w);
+UserPanel::UserPanel(QWidget* parent) : QWidget(parent) {
+  QVBoxLayout *layout = new QVBoxLayout(this);
 
   // OPKR
   layout->addWidget(new LabelControl("UI설정", ""));
@@ -482,7 +485,7 @@ QWidget * user_panel(QWidget * parent) {
   const char* record_del = "rm -f /storage/emulated/0/videos/*";
   auto recorddelbtn = new ButtonControl("녹화파일 전부 삭제", "실행");
   QObject::connect(recorddelbtn, &ButtonControl::released, [=]() {
-    if (ConfirmationDialog::confirm("저장된 녹화파일을 모두 삭제합니다. 진행하시겠습니까?")){
+    if (ConfirmationDialog::confirm("저장된 녹화파일을 모두 삭제합니다. 진행하시겠습니까?", this)){
       std::system(record_del);
     }
   });
@@ -490,7 +493,7 @@ QWidget * user_panel(QWidget * parent) {
   const char* realdata_del = "rm -rf /storage/emulated/0/realdata/*";
   auto realdatadelbtn = new ButtonControl("주행로그 전부 삭제", "실행");
   QObject::connect(realdatadelbtn, &ButtonControl::released, [=]() {
-    if (ConfirmationDialog::confirm("저장된 주행로그를 모두 삭제합니다. 진행하시겠습니까?")){
+    if (ConfirmationDialog::confirm("저장된 주행로그를 모두 삭제합니다. 진행하시겠습니까?", this)){
       std::system(realdata_del);
     }
   });
@@ -540,7 +543,7 @@ QWidget * user_panel(QWidget * parent) {
   const char* cal_ok = "cp -f /data/openpilot/selfdrive/assets/addon/param/CalibrationParams /data/params/d/";
   auto calokbtn = new ButtonControl("캘리브레이션 강제 활성화", "실행");
   QObject::connect(calokbtn, &ButtonControl::released, [=]() {
-    if (ConfirmationDialog::confirm("캘리브레이션을 강제로 설정합니다. 인게이지 확인용이니 실 주행시에는 초기화 하시기 바랍니다.")){
+    if (ConfirmationDialog::confirm("캘리브레이션을 강제로 설정합니다. 인게이지 확인용이니 실 주행시에는 초기화 하시기 바랍니다.", this)){
       std::system(cal_ok);
     }
   });
@@ -561,20 +564,15 @@ QWidget * user_panel(QWidget * parent) {
   const char* p_edit_go = "/data/openpilot/p_edit.sh ''";
   auto peditbtn = new ButtonControl("판다값 변경 적용", "실행");
   QObject::connect(peditbtn, &ButtonControl::released, [=]() {
-    if (ConfirmationDialog::confirm("변경된 판다값을 적용합니다. 진행하시겠습니까? 자동 재부팅됩니다.")){
+    if (ConfirmationDialog::confirm("변경된 판다값을 적용합니다. 진행하시겠습니까? 자동 재부팅됩니다.", this)){
       std::system(p_edit_go);
     }
   });
   layout->addWidget(peditbtn);
-
-  layout->addStretch(1);
-
-  return w;
 }
 
-QWidget * tuning_panel(QWidget * parent) {
-  QWidget *w = new QWidget(parent);
-  QVBoxLayout *layout = new QVBoxLayout(w);
+TuningPanel::TuningPanel(QWidget* parent) : QWidget(parent) {
+  QVBoxLayout *layout = new QVBoxLayout(this);
 
   // OPKR
   layout->addWidget(new LabelControl("튜닝메뉴", ""));
@@ -621,9 +619,11 @@ QWidget * tuning_panel(QWidget * parent) {
     layout->addWidget(new DcGain());
   }
 
-  layout->addStretch(1);
+  layout->addWidget(horizontal_line());
 
-  return w;
+  layout->addWidget(new LabelControl("롱컨트롤메뉴", ""));
+  layout->addWidget(new DynamicTR());
+  layout->addWidget(new CruiseGapTR());
 }
 
 void SettingsWindow::showEvent(QShowEvent *event) {
@@ -670,8 +670,8 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
     {"네트워크", network_panel(this)},
     {"토글메뉴", new TogglesPanel(this)},
     {"소프트웨어", new SoftwarePanel(this)},
-    {"사용자설정", user_panel(this)},
-    {"튜닝", tuning_panel(this)},
+    {"사용자설정", new UserPanel(this)},
+    {"튜닝", new TuningPanel(this)},
   };
 
   sidebar_layout->addSpacing(45);
@@ -741,12 +741,4 @@ void SettingsWindow::hideEvent(QHideEvent *event) {
 #ifdef QCOM
   HardwareEon::close_activities();
 #endif
-
-  // TODO: this should be handled by the Dialog classes
-  QList<QWidget*> children = findChildren<QWidget *>();
-  for(auto &w : children) {
-    if(w->metaObject()->superClass()->className() == QString("QDialog")) {
-      w->close();
-    }
-  }
 }

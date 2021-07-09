@@ -160,7 +160,6 @@ static void update_state(UIState *s) {
     } else if (scene.lateralControlMethod == 2) {
       scene.output_scale = scene.controls_state.getLateralControlState().getLqrState().getOutput();
     }
-    scene.angleSteersDes = scene.controls_state.getSteeringAngleDesiredDeg();
 
     scene.alertTextMsg1 = scene.controls_state.getAlertTextMsg1(); //debug1
     scene.alertTextMsg2 = scene.controls_state.getAlertTextMsg2(); //debug2
@@ -169,7 +168,6 @@ static void update_state(UIState *s) {
     scene.limitSpeedCameraDist = scene.controls_state.getLimitSpeedCameraDist();
     scene.mapSign = scene.controls_state.getMapSign();
     scene.steerRatio = scene.controls_state.getSteerRatio();
-    scene.long_plan_source = scene.controls_state.getLongPlanSource();
   }
   if (sm.updated("carState")) {
     scene.car_state = sm["carState"].getCarState();
@@ -262,6 +260,7 @@ static void update_state(UIState *s) {
   if (sm.updated("carParams")) {
     scene.longitudinal_control = sm["carParams"].getCarParams().getOpenpilotLongitudinalControl();
     scene.steerMax_V = sm["carParams"].getCarParams().getSteerMaxV()[0];
+    scene.steer_actuator_delay = sm["carParams"].getCarParams().getSteerActuatorDelay();
   }
   if (sm.updated("sensorEvents")) {
     for (auto sensor : sm["sensorEvents"].getSensorEvents()) {
@@ -275,23 +274,31 @@ static void update_state(UIState *s) {
         if (gyro.totalSize().wordCount) {
           scene.gyro_sensor = gyro[1];
         }
+      } else if (scene.started && sensor.which() == cereal::SensorEventData::GYRO_UNCALIBRATED) {
+        auto gyro2 = sensor.getGyroUncalibrated().getV();
+        scene.gyro_sensor2 = gyro2[1];
       }
+
     }
   }
   if (sm.updated("roadCameraState")) {
     auto camera_state = sm["roadCameraState"].getRoadCameraState();
 
     float max_lines = Hardware::EON() ? 5408 : 1757;
-    float gain = camera_state.getGainFrac();
+    float gain = camera_state.getGain();
 
     if (Hardware::TICI()) {
-      // gainFrac can go up to 4, with another 2.5x multiplier based on globalGain. Scale back to 0 - 1
-      gain *= (camera_state.getGlobalGain() > 100 ? 2.5 : 1.0) / 10.0;
+      // Max gain is 4 * 2.5 (High Conversion Gain)
+      gain /= 10.0;
     }
 
     scene.light_sensor = std::clamp<float>((1023.0 / max_lines) * (max_lines - camera_state.getIntegLines() * gain), 0.0, 1023.0);
   }
-  scene.started = sm["deviceState"].getDeviceState().getStarted();
+  if (Params().getBool("IsOpenpilotViewEnabled")) {
+    scene.started = sm["deviceState"].getDeviceState().getStarted();
+  } else {
+    scene.started = sm["deviceState"].getDeviceState().getStarted() && scene.ignition;
+  }
   if (sm.updated("lateralPlan")) {
     scene.lateral_plan = sm["lateralPlan"].getLateralPlan();
     auto data = sm["lateralPlan"].getLateralPlan();
@@ -303,7 +310,6 @@ static void update_state(UIState *s) {
     scene.lateralPlan.steerRateCost = data.getSteerRateCost();
     scene.lateralPlan.standstillElapsedTime = data.getStandstillElapsedTime();
     scene.lateralPlan.lanelessModeStatus = data.getLanelessMode();
-    scene.lateralPlan.steerActuatorDelay = data.getSteerActuatorDelay();
   }
   // opkr
   if (sm.updated("liveMapData")) {
@@ -314,6 +320,8 @@ static void update_state(UIState *s) {
     scene.liveMapData.opkrspeedlimitdist = data.getSpeedLimitDistance();
     scene.liveMapData.opkrspeedsign = data.getSafetySign();
     scene.liveMapData.opkrcurveangle = data.getRoadCurvature();
+    scene.liveMapData.opkrturninfo = data.getTurnInfo();
+    scene.liveMapData.opkrdisttoturn = data.getDistanceToTurn();
   }
 }
 
@@ -326,7 +334,7 @@ static void update_params(UIState *s) {
     scene.driving_record = Params().getBool("OpkrDrivingRecord");
     scene.end_to_end = Params().getBool("EndToEndToggle");
   }
-  if (!scene.move_to_background && (frame - scene.started_frame > 16*UI_FREQ) && Params().getBool("OpkrRunNaviOnBoot") && Params().getBool("OpkrMapEnable")) {
+  if (!scene.move_to_background && (frame - scene.started_frame > 5*UI_FREQ) && Params().getBool("OpkrRunNaviOnBoot") && Params().getBool("OpkrMapEnable")) {
     scene.move_to_background = true;
     scene.map_on_top = false;
     scene.map_on_overlay = true;
