@@ -28,6 +28,7 @@ int main() {
 
   int     nTime = 0;
   int     oTime = 0;
+  int     sTime = 0;
 
   ExitHandler do_exit;
   PubMaster pm({"liveMapData"});
@@ -92,13 +93,14 @@ int main() {
       else if( strcmp( entry.tag, "opkrsigntype" ) == 0 )
       {
         oTime = 0;
+        sTime = 0;
         res.safetySign = atoi( entry.message );
       }
-      else if( (res.speedLimitDistance > 1 && res.speedLimitDistance < 50) && strcmp( entry.tag, "AudioFlinger" ) == 0 )  //   msm8974_platform
+      else if( (res.speedLimitDistance > 1 && res.speedLimitDistance < 50) && (strcmp( entry.tag, "AudioFlinger" ) == 0) )  //   msm8974_platform
       {
         res.speedLimitDistance = 0;
         res.speedLimit = 0;
-        system("logcat -c &");
+        //system("logcat -c &");
       }
       else if( strcmp( entry.tag, "opkrturninfo" ) == 0 )
       {
@@ -108,6 +110,15 @@ int main() {
       {
         res.distanceToTurn = atoi( entry.message );
       }
+      else if( (strcmp( entry.tag, "GestureControl" ) == 0) && (res.speedLimitDistance == 0) && res.speedLimit == 0)
+      {
+        sTime++;
+        if ( sTime > 9 )
+        {
+          sTime = 0;
+          res.safetySign = 0;
+        }
+      }
       else
       {
         oTime++;
@@ -116,7 +127,6 @@ int main() {
           oTime = 0;
           res.speedLimitDistance = 0;
           res.speedLimit = 0;
-          res.safetySign = 0;
         }
       }
 

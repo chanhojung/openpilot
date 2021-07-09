@@ -7,7 +7,6 @@ from cereal import log
 import cereal.messaging as messaging
 
 from selfdrive.config import Conversions as CV
-from selfdrive.controls.lib.speed_smoother import speed_smoother
 from selfdrive.controls.lib.long_mpc import LongitudinalMpc
 from selfdrive.controls.lib.lane_planner import TRAJECTORY_SIZE
 from selfdrive.car.hyundai.values import Buttons

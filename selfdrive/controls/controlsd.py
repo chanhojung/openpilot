@@ -22,7 +22,6 @@ from selfdrive.controls.lib.latcontrol_angle import LatControlAngle
 from selfdrive.controls.lib.events import Events, ET
 from selfdrive.controls.lib.alertmanager import AlertManager
 from selfdrive.controls.lib.vehicle_model import VehicleModel
-from selfdrive.controls.lib.longitudinal_planner import LON_MPC_STEP
 from selfdrive.locationd.calibrationd import Calibration
 from selfdrive.hardware import HARDWARE, TICI
 from selfdrive.car.hyundai.values import Buttons
@@ -42,7 +41,6 @@ IGNORE_PROCESSES = set(["rtshield", "uploader", "deleter", "loggerd", "logmessag
 ThermalStatus = log.DeviceState.ThermalStatus
 State = log.ControlsState.OpenpilotState
 PandaType = log.PandaState.PandaType
-LongitudinalPlanSource = log.LongitudinalPlan.LongitudinalPlanSource
 Desire = log.LateralPlan.Desire
 LaneChangeState = log.LateralPlan.LaneChangeState
 LaneChangeDirection = log.LateralPlan.LaneChangeDirection
@@ -103,8 +101,7 @@ class Controls:
 
     car_recognized = self.CP.carName != 'mock'
 
-    # If stock camera is disconnected, we loaded car controls and it's not dashcam mode
-    controller_available = self.CP.enableCamera and self.CI.CC is not None and not passive and not self.CP.dashcamOnly
+    controller_available = self.CI.CC is not None and not passive and not self.CP.dashcamOnly
     community_feature = self.CP.communityFeature or self.CP.fuzzyFingerprint or \
                         self.CP.fingerprintSource == car.CarParams.FingerprintSource.can
     community_feature_disallowed = community_feature and (not community_feature_toggle)
@@ -139,7 +136,6 @@ class Controls:
       self.LaC = LatControlLQR(self.CP)
       self.lateral_control_method = 2
 
-    self.long_plan_source = 0
     self.controlsAllowed = False
 
     self.initialized = False
@@ -159,6 +155,8 @@ class Controls:
     self.events_prev = []
     self.current_alert_types = [ET.PERMANENT]
     self.logged_comm_issue = False
+    self.v_target = 0.0
+    self.a_target = 0.0
 
     # TODO: no longer necessary, aside from process replay
     self.sm['liveParameters'].valid = True
@@ -196,6 +194,7 @@ class Controls:
 
     self.second = 0.0
     self.map_enabled = False
+    self.lane_change_delay = int(Params().get("OpkrAutoLaneChangeDelay", encoding="utf8"))
 
   def auto_enable(self, CS):
     if self.state != State.enabled and CS.vEgo >= 3 * CV.KPH_TO_MS and CS.gearShifter == 2 and self.sm['liveCalibration'].calStatus != Calibration.UNCALIBRATED:
@@ -256,9 +255,15 @@ class Controls:
         self.events.add(EventName.laneChangeBlocked)
       else:
         if direction == LaneChangeDirection.left:
-          self.events.add(EventName.preLaneChangeLeft)
+          if self.lane_change_delay == 0:
+            self.events.add(EventName.preLaneChangeLeft)
+          else:
+            self.events.add(EventName.laneChange)
         else:
-          self.events.add(EventName.preLaneChangeRight)
+          if self.lane_change_delay == 0:
+            self.events.add(EventName.preLaneChangeRight)
+          else:
+            self.events.add(EventName.laneChange)
     elif self.sm['lateralPlan'].laneChangeState in [LaneChangeState.laneChangeStarting,
                                                  LaneChangeState.laneChangeFinishing]:
       self.events.add(EventName.laneChange)
@@ -285,7 +290,9 @@ class Controls:
      not self.commIssue_ignored and not self.map_enabled:
       self.events.add(EventName.commIssue)
       if not self.logged_comm_issue:
-        cloudlog.error(f"commIssue - valid: {self.sm.valid} - alive: {self.sm.alive}")
+        invalid = [s for s, valid in self.sm.valid.items() if not valid]
+        not_alive = [s for s, alive in self.sm.alive.items() if not alive]
+        cloudlog.event("commIssue", invalid=invalid, not_alive=not_alive)
         self.logged_comm_issue = True
     else:
       self.logged_comm_issue = False
@@ -343,7 +350,12 @@ class Controls:
         self.events.add(EventName.processNotRunning)
 
     # Only allow engagement with brake pressed when stopped behind another stopped car
-    #if CS.brakePressed and self.sm['longitudinalPlan'].vTargetFuture >= STARTING_TARGET_SPEED \
+    speeds = self.sm['longitudinalPlan'].speeds
+    if len(speeds) > 1:
+      v_future = speeds[-1]
+    else:
+      v_future = 100.0
+    #if CS.brakePressed and v_future >= STARTING_TARGET_SPEED \
     #  and self.CP.openpilotLongitudinalControl and CS.vEgo < 0.3:
     #  self.events.add(EventName.noTarget)
       
@@ -527,16 +539,9 @@ class Controls:
       self.LaC.reset()
       self.LoC.reset(v_pid=CS.vEgo)
 
-    long_plan_age = DT_CTRL * (self.sm.frame - self.sm.rcv_frame['longitudinalPlan'])
-    # no greater than dt mpc + dt, to prevent too high extraps
-    dt = min(long_plan_age, LON_MPC_STEP + DT_CTRL) + DT_CTRL
-
-    a_acc_sol = long_plan.aStart + (dt / LON_MPC_STEP) * (long_plan.aTarget - long_plan.aStart)
-    v_acc_sol = long_plan.vStart + dt * (a_acc_sol + long_plan.aStart) / 2.0
-
     if not self.joystick_mode:
       # Gas/Brake PID loop
-      actuators.gas, actuators.brake = self.LoC.update(self.active and CS.cruiseState.speed > 1., CS, v_acc_sol, long_plan.vTargetFuture, long_plan.aTarget, a_acc_sol, self.CP, long_plan.hasLead, self.sm['radarState'], long_plan.longitudinalPlanSource)
+      actuators.gas, actuators.brake, self.v_target, self.a_target = self.LoC.update(self.active and CS.cruiseState.speed > 1., CS, self.CP, long_plan, self.sm['radarState'])
 
       # Steering PID loop and lateral MPC
       desired_curvature, desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,
@@ -581,9 +586,9 @@ class Controls:
         if left_deviation or right_deviation:
           self.events.add(EventName.steerSaturated)
 
-    return actuators, v_acc_sol, a_acc_sol, lac_log
+    return actuators, lac_log
 
-  def publish_logs(self, CS, start_time, actuators, v_acc, a_acc, lac_log):
+  def publish_logs(self, CS, start_time, actuators, lac_log):
     """Send actuators and hud commands to the car, send controlsstate and MPC logging"""
 
     self.log_alertTextMsg1 = trace1.global_alertTextMsg1
@@ -599,12 +604,14 @@ class Controls:
     if self.joystick_mode and self.sm.rcv_frame['testJoystick'] > 0 and self.sm['testJoystick'].buttons[0]:
       CC.cruiseControl.cancel = True
 
+    # TODO remove car specific stuff in controls
     # Some override values for Honda
     # brake discount removes a sharp nonlinearity
     brake_discount = (1.0 - clip(actuators.brake * 3., 0.0, 1.0))
     speed_override = max(0.0, (self.LoC.v_pid + CS.cruiseState.speedOffset) * brake_discount)
     CC.cruiseControl.speedOverride = float(speed_override if self.CP.enableCruise else 0.0)
-    CC.cruiseControl.accelOverride = self.CI.calc_accel_override(CS.aEgo, self.sm['longitudinalPlan'].aTarget, CS.vEgo, self.sm['longitudinalPlan'].vTarget)
+    CC.cruiseControl.accelOverride = float(self.CI.calc_accel_override(CS.aEgo, self.a_target,
+                                                                       CS.vEgo, self.v_target))
 
     CC.hudControl.setSpeed = float(self.v_cruise_kph * CV.KPH_TO_MS)
     CC.hudControl.speedVisible = self.enabled
@@ -684,8 +691,6 @@ class Controls:
     controlsState.upAccelCmd = float(self.LoC.pid.p)
     controlsState.uiAccelCmd = float(self.LoC.pid.id)
     controlsState.ufAccelCmd = float(self.LoC.pid.f)
-    controlsState.vTargetLead = float(v_acc)
-    controlsState.aTarget = float(a_acc)
     controlsState.cumLagMs = -self.rk.remaining * 1000.
     controlsState.startMonoTime = int(start_time * 1e9)
     controlsState.forceDecel = bool(force_decel)
@@ -701,20 +706,6 @@ class Controls:
       controlsState.limitSpeedCameraDist = float(CS.safetyDist)
     controlsState.lateralControlMethod = int(self.lateral_control_method)
     controlsState.steerRatio = float(self.steerRatio_to_send)
-
-    if self.sm['longitudinalPlan'].longitudinalPlanSource == LongitudinalPlanSource.cruise:
-      self.long_plan_source = 1
-    elif self.sm['longitudinalPlan'].longitudinalPlanSource == LongitudinalPlanSource.mpc1:
-      self.long_plan_source = 2
-    elif self.sm['longitudinalPlan'].longitudinalPlanSource == LongitudinalPlanSource.mpc2:
-      self.long_plan_source = 3
-    elif self.sm['longitudinalPlan'].longitudinalPlanSource == LongitudinalPlanSource.mpc3:
-      self.long_plan_source = 4
-    elif self.sm['longitudinalPlan'].longitudinalPlanSource == LongitudinalPlanSource.model:
-      self.long_plan_source = 5
-    else:
-      self.long_plan_source = 0
-    controlsState.longPlanSource = self.long_plan_source
 
     if self.joystick_mode:
       controlsState.lateralControlState.debugState = lac_log
@@ -779,12 +770,12 @@ class Controls:
       self.prof.checkpoint("State transition")
 
     # Compute actuators (runs PID loops and lateral MPC)
-    actuators, v_acc, a_acc, lac_log = self.state_control(CS)
+    actuators, lac_log = self.state_control(CS)
 
     self.prof.checkpoint("State Control")
 
     # Publish data
-    self.publish_logs(CS, start_time, actuators, v_acc, a_acc, lac_log)
+    self.publish_logs(CS, start_time, actuators, lac_log)
     self.prof.checkpoint("Sent")
 
     if not CS.cruiseState.enabled and not self.hyundai_lkas:

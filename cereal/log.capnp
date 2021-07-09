@@ -123,26 +123,37 @@ struct InitData {
 struct FrameData {
   frameId @0 :UInt32;
   encodeId @1 :UInt32; # DEPRECATED
-  timestampEof @2 :UInt64;
+
+  frameType @7 :FrameType;
   frameLength @3 :Int32;
+
+  # Timestamps
+  timestampEof @2 :UInt64;
+  timestampSof @8 :UInt64;
+
+  # Exposure
   integLines @4 :Int32;
-  globalGain @5 :Int32;
+  highConversionGain @20 :Bool;
+  gain @15 :Float32; # This includes highConversionGain if enabled
+  measuredGreyFraction @21 :Float32;
+  targetGreyFraction @22 :Float32;
+
+  # Focus
   lensPos @11 :Int32;
   lensSag @12 :Float32;
   lensErr @13 :Float32;
   lensTruePos @14 :Float32;
-  image @6 :Data;
-  gainFrac @15 :Float32;
   focusVal @16 :List(Int16);
   focusConf @17 :List(UInt8);
   sharpnessScore @18 :List(UInt16);
   recoverState @19 :Int32;
 
-  frameType @7 :FrameType;
-  timestampSof @8 :UInt64;
   transform @10 :List(Float32);
 
   androidCaptureResult @9 :AndroidCaptureResult;
+
+  image @6 :Data;
+  globalGainDEPRECATED @5 :Int32;
 
   enum FrameType {
     unknown @0;
@@ -551,8 +562,7 @@ struct ControlsState @0x97ff69c53601abf1 {
   limitSpeedCamera @63 :Float32;
   limitSpeedCameraDist @64 :Float32;
   steerRatio @65 :Float32;
-  longPlanSource  @66 :UInt8;
-  mapSign @67 :Float32;
+  mapSign @66 :Float32;
 
   lateralControlState :union {
     indiState @52 :LateralINDIState;
@@ -798,47 +808,47 @@ struct AndroidLogEntry {
 }
 
 struct LongitudinalPlan @0xe00b5b3eba12876c {
-  mdMonoTime @9 :UInt64;
-  radarStateMonoTime @10 :UInt64;
-
-  vCruise @16 :Float32;
-  aCruise @17 :Float32;
-  vTarget @3 :Float32;
-  vTargetFuture @14 :Float32;
-  vMax @20 :Float32;
-  aTarget @18 :Float32;
-
-  vStart @26 :Float32;
-  aStart @27 :Float32;
-
+  modelMonoTime @9 :UInt64;
   hasLead @7 :Bool;
   fcw @8 :Bool;
   longitudinalPlanSource @15 :LongitudinalPlanSource;
-
   processingDelay @29 :Float32;
+  
+  # desired speed/accel over next 2.5s
+  accels @32 :List(Float32);
+  speeds @33 :List(Float32);
 
   # opkr
-  dRel1 @32 :Float32;
-  yRel1 @33 :Float32;
-  vRel1 @34 :Float32;
-  dRel2 @35 :Float32;
-  yRel2 @36 :Float32;
-  vRel2 @37 :Float32;
-  status2 @38 :Bool;
-  targetSpeedCamera @39 :Float32;
-  targetSpeedCameraDist @40 :Float32;
-  mapSign @41 :Float32;
-  onSpeedControl @42 :Bool;
+  dRel1 @34 :Float32;
+  yRel1 @35 :Float32;
+  vRel1 @36 :Float32;
+  dRel2 @37 :Float32;
+  yRel2 @38 :Float32;
+  vRel2 @39 :Float32;
+  status2 @40 :Bool;
+  targetSpeedCamera @41 :Float32;
+  targetSpeedCameraDist @42 :Float32;
+  mapSign @43 :Float32;
+  onSpeedControl @44 :Bool;
 
   enum LongitudinalPlanSource {
     cruise @0;
-    mpc1 @1;
-    mpc2 @2;
-    mpc3 @3;
-    model @4;
+    lead0 @1;
+    lead1 @2;
+    lead2 @3;
+    e2e @4;
   }
 
   # deprecated
+  vCruiseDEPRECATED @16 :Float32;
+  aCruiseDEPRECATED @17 :Float32;
+  vTargetDEPRECATED @3 :Float32;
+  vTargetFutureDEPRECATED @14 :Float32;
+  aTargetDEPRECATED @18 :Float32;
+  vStartDEPRECATED @26 :Float32;
+  aStartDEPRECATED @27 :Float32;
+  vMaxDEPRECATED @20 :Float32;
+  radarStateMonoTimeDEPRECATED @10 :UInt64;
   jerkFactorDEPRECATED @6 :Float32;
   hasLeftLaneDEPRECATED @23 :Bool;
   hasRightLaneDEPRECATED @24 :Bool;
@@ -1390,8 +1400,6 @@ struct Event {
     longitudinalPlan @24 :LongitudinalPlan;
     lateralPlan @64 :LateralPlan;
     ubloxGnss @34 :UbloxGnss;
-    liveMpc @36 :LiveMpcData;
-    liveLongitudinalMpc @37 :LiveLongitudinalMpcData;
     ubloxRaw @39 :Data;
     gpsLocationExternal @48 :GpsLocationData;
     driverState @59 :DriverState;
@@ -1428,6 +1436,8 @@ struct Event {
 
     # *********** legacy + deprecated ***********
     model @9 :Legacy.ModelData; # TODO: rename modelV2 and mark this as deprecated
+    liveMpcDEPRECATED @36 :LiveMpcData;
+    liveLongitudinalMpcDEPRECATED @37 :LiveLongitudinalMpcData;
     liveLocationKalmanDEPRECATED @51 :Legacy.LiveLocationData;
     orbslamCorrectionDEPRECATED @45 :Legacy.OrbslamCorrection;
     liveUIDEPRECATED @14 :Legacy.LiveUI;

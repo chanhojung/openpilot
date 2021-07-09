@@ -1339,18 +1339,37 @@ public:
   CruiseGapTR();
 
 private:
+  QPushButton btn1;
   QPushButton btn2;
   QPushButton btn3;
   QPushButton btn4;
+  QLabel label1;
   QLabel label2;
   QLabel label3;
   QLabel label4;
+  QLabel label1a;
   QLabel label2a;
   QLabel label3a;
   QLabel label4a;
   Params params;
   
+  void refresh1();
   void refresh2();
   void refresh3();
   void refresh4();
+};
+
+class DynamicTR : public AbstractControl {
+  Q_OBJECT
+
+public:
+  DynamicTR();
+
+private:
+  QPushButton btnplus;
+  QPushButton btnminus;
+  QLabel label;
+  Params params;
+  
+  void refresh();
 };
