@@ -79,7 +79,9 @@ class Planner():
     a_ego = sm['carState'].aEgo
     self.vego = v_ego
 
-    if CP.sccBus != 0:
+    if sm['controlsState'].mapSign == 124:
+      v_cruise_kph = 20.
+    elif CP.sccBus != 0:
       v_cruise_kph = sm['carState'].vSetDis
     else:
       v_cruise_kph = sm['controlsState'].vCruise

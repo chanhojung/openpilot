@@ -29,6 +29,7 @@ int main() {
   int     nTime = 0;
   int     oTime = 0;
   int     sTime = 0;
+  bool    sBump = false;
 
   ExitHandler do_exit;
   PubMaster pm({"liveMapData"});
@@ -75,6 +76,7 @@ int main() {
         nTime = 0;
         res.mapEnable = Params().getBool("OpkrMapEnable");
         res.mapValid = Params().getBool("OpkrApksEnable");
+        sBump = Params().getBool("OpkrSpeedBump");
       }
 
    //  opkrspdlimit, opkrspddist, opkrsigntype, opkrcurvangle
@@ -95,8 +97,11 @@ int main() {
         oTime = 0;
         sTime = 0;
         res.safetySign = atoi( entry.message );
+        if (res.safetySign == 124) {
+          Params().put("OpkrSpeedBump", "1", 1);
+        }
       }
-      else if( (res.speedLimitDistance > 1 && res.speedLimitDistance < 50) && (strcmp( entry.tag, "AudioFlinger" ) == 0) )  //   msm8974_platform
+      else if( (res.speedLimitDistance > 1 && res.speedLimitDistance < 60) && (strcmp( entry.tag, "AudioFlinger" ) == 0) )  //   msm8974_platform
       {
         res.speedLimitDistance = 0;
         res.speedLimit = 0;
@@ -110,19 +115,23 @@ int main() {
       {
         res.distanceToTurn = atoi( entry.message );
       }
-      else if( (strcmp( entry.tag, "GestureControl" ) == 0) && (res.speedLimitDistance == 0) && res.speedLimit == 0)
+      else if( (strcmp( entry.tag, "GestureControl" ) == 0) && (res.speedLimit == 0) )
       {
         sTime++;
-        if ( sTime > 9 )
+        if ( sTime > 4 )
         {
           sTime = 0;
           res.safetySign = 0;
         }
+        else if ( (sTime > 1) && (!sBump) )
+        {
+          res.safetySign = 0;
+        }
       }
-      else
+      else if( strcmp( entry.tag, "GestureControl" ) == 0 )
       {
         oTime++;
-        if ( oTime > 35 )
+        if ( oTime > 2 )
         {
           oTime = 0;
           res.speedLimitDistance = 0;

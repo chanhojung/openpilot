@@ -405,12 +405,13 @@ static void ui_draw_debug(UIState *s)
     ui_print(s, ui_viz_rx, ui_viz_ry+450, "SC:%.2f", scene.lateralPlan.steerRateCost);
     ui_print(s, ui_viz_rx, ui_viz_ry+500, "OS:%.2f", abs(scene.output_scale));
     ui_print(s, ui_viz_rx, ui_viz_ry+550, "%.2f|%.2f", scene.lateralPlan.lProb, scene.lateralPlan.rProb);
-    ui_print(s, ui_viz_rx, ui_viz_ry+600, "G:%.5f", scene.gyro_sensor2);
+    //ui_print(s, ui_viz_rx, ui_viz_ry+600, "A:%.5f", scene.accel_sensor2);
     if (s->scene.map_is_running) {
-      if (s->scene.mapSign) ui_print(s, ui_viz_rx, ui_viz_ry+600, "S:%.0f", scene.mapSign);
-      if (s->scene.limitSpeedCameraDist) ui_print(s, ui_viz_rx, ui_viz_ry+650, "D:%.0f", scene.limitSpeedCameraDist);
-      if (s->scene.liveMapData.opkrturninfo) ui_print(s, ui_viz_rx, ui_viz_ry+700, "T:%.0f", scene.liveMapData.opkrturninfo);
-      if (s->scene.liveMapData.opkrdisttoturn) ui_print(s, ui_viz_rx, ui_viz_ry+750, "D:%.0f", scene.liveMapData.opkrdisttoturn);
+      if (s->scene.liveMapData.opkrspeedsign) ui_print(s, ui_viz_rx, ui_viz_ry+600, "S:%.0f", scene.liveMapData.opkrspeedsign);
+      if (s->scene.liveMapData.opkrspeedlimit) ui_print(s, ui_viz_rx, ui_viz_ry+650, "S:%.0f", scene.liveMapData.opkrspeedlimit);
+      if (s->scene.liveMapData.opkrspeedlimitdist) ui_print(s, ui_viz_rx, ui_viz_ry+700, "D:%.0f", scene.liveMapData.opkrspeedlimitdist);
+      if (s->scene.liveMapData.opkrturninfo) ui_print(s, ui_viz_rx, ui_viz_ry+750, "T:%.0f", scene.liveMapData.opkrturninfo);
+      if (s->scene.liveMapData.opkrdisttoturn) ui_print(s, ui_viz_rx, ui_viz_ry+800, "D:%.0f", scene.liveMapData.opkrdisttoturn);
     }
     nvgFontSize(s->vg, 40);
     nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
@@ -464,7 +465,7 @@ static void ui_draw_gear( UIState *s )
 static void ui_draw_vision_face(UIState *s) {
   const int radius = 85;
   const int center_x = s->viz_rect.x + radius + (bdr_s);
-  const int center_y = s->viz_rect.bottom() - 1.56 * footer_h + ((footer_h - radius) / 2);
+  const int center_y = s->viz_rect.bottom() - footer_h + ((footer_h - radius) / 2);
   ui_draw_circle_image(s, center_x, center_y, radius, "driver_face", s->scene.dm_active);
 }
 
@@ -474,25 +475,18 @@ static void ui_draw_vision_scc_gap(UIState *s) {
 
   const int radius = 85;
   const int center_x = s->viz_rect.x + radius + (bdr_s);
-  const int center_y = s->viz_rect.bottom() - footer_h + ((footer_h - radius) / 2);
+  const int center_y = s->viz_rect.bottom() - 1.60 * footer_h + ((footer_h - radius) / 2);  
 
-  float lead_car_dist_img_alpha = gap > 0 ? 1.0f : 0.15f;
-  float lead_car_dist_bg_alpha = gap > 0 ? 0.3f : 0.1f;
+  float lead_car_dist_img_alpha = gap > 0 ? 0.6f : 0.3f;
+  float lead_car_dist_bg_alpha = gap > 0 ? 0.0f : 0.0f;
   NVGcolor lead_car_dist_bg = nvgRGBA(0, 0, 0, (255 * lead_car_dist_bg_alpha));
-
-  if(gap <= 0) {
-    ui_draw_circle_image(s, center_x, center_y, radius, "lead_car_dist_0", lead_car_dist_bg, lead_car_dist_img_alpha);
-  } else if (gap == 1) {
-    ui_draw_circle_image(s, center_x, center_y, radius, "lead_car_dist_1", lead_car_dist_bg, lead_car_dist_img_alpha); 
-  } else if (gap == 2) {
-    ui_draw_circle_image(s, center_x, center_y, radius, "lead_car_dist_2", lead_car_dist_bg, lead_car_dist_img_alpha); 
-  } else if (gap == 3) {
-    ui_draw_circle_image(s, center_x, center_y, radius, "lead_car_dist_3", lead_car_dist_bg, lead_car_dist_img_alpha); 
-  } else if (gap == 4) {
-    ui_draw_circle_image(s, center_x, center_y, radius, "lead_car_dist_4", lead_car_dist_bg, lead_car_dist_img_alpha); 
-  } else {
-    ui_draw_circle_image(s, center_x, center_y, radius, "lead_car_dist_0", lead_car_dist_bg, lead_car_dist_img_alpha);    
-  }
+  
+  if(gap <= 0) {ui_draw_circle_image(s, center_x, center_y, radius+15, "lead_car_dist_0", lead_car_dist_bg, lead_car_dist_img_alpha);}
+  else if (gap == 1) {ui_draw_circle_image(s, center_x, center_y, radius+15, "lead_car_dist_1", lead_car_dist_bg, lead_car_dist_img_alpha);}
+  else if (gap == 2) {ui_draw_circle_image(s, center_x, center_y, radius+15, "lead_car_dist_2", lead_car_dist_bg, lead_car_dist_img_alpha);}
+  else if (gap == 3) {ui_draw_circle_image(s, center_x, center_y, radius+15, "lead_car_dist_3", lead_car_dist_bg, lead_car_dist_img_alpha);}
+  else if (gap == 4) {ui_draw_circle_image(s, center_x, center_y, radius+15, "lead_car_dist_4", lead_car_dist_bg, lead_car_dist_img_alpha);}
+  else {ui_draw_circle_image(s, center_x, center_y, radius+15, "lead_car_dist_0", lead_car_dist_bg, lead_car_dist_img_alpha);}
 }
 
 static void ui_draw_vision_brake(UIState *s) {
@@ -650,20 +644,20 @@ static void ui_draw_vision_cameradist(UIState *s) {    // from 목사탕님 & Ne
     color = COLOR_RED;
     ui_draw_rect(s->vg, rect, color, 10, 0.);
     //const std::string cameradist_str = std::to_string((int)std::nearbyint(cameradist));
-    ui_draw_text(s, rect.centerX() - 20, int(s->viz_rect.y + (bdr_s))+260, str, 36 * 2.0, COLOR_WHITE, "sans-bold");
-    ui_draw_text(s, rect.centerX() + 70, int(s->viz_rect.y + (bdr_s))+265, "km", 26 * 1.6, COLOR_WHITE, "sans-semibold");
+    ui_draw_text(s, rect.centerX() - 20, int(s->viz_rect.y + (bdr_s))+290, str, 40 * 2.0, COLOR_WHITE, "sans-bold");
+    ui_draw_text(s, rect.centerX() + 65, int(s->viz_rect.y + (bdr_s))+295, "km", 30 * 1.6, COLOR_WHITE, "sans-semibold");
   } else if (s->scene.limitSpeedCamera > 29){
     color = COLOR_WHITE_ALPHA(0);
     ui_draw_rect(s->vg, rect, color, 10, 0.);
     const std::string cameradist_str = std::to_string((int)std::nearbyint(cameradist));
-    ui_draw_text(s, rect.centerX() - 15, int(s->viz_rect.y + (bdr_s))+260, cameradist_str.c_str(), 36 * 2.0, COLOR_WHITE, "sans-bold");
-    ui_draw_text(s, rect.centerX() + 70, int(s->viz_rect.y + (bdr_s))+265, "m", 26 * 1.6, COLOR_WHITE, "sans-semibold");
+    ui_draw_text(s, rect.centerX() - 15, int(s->viz_rect.y + (bdr_s))+290, cameradist_str.c_str(), 40 * 2.0, COLOR_WHITE, "sans-bold");
+    ui_draw_text(s, rect.centerX() + 65, int(s->viz_rect.y + (bdr_s))+295, "m", 30 * 1.6, COLOR_WHITE, "sans-semibold");
   } else {
     color = COLOR_WHITE_ALPHA(0);
     ui_draw_rect(s->vg, rect, color, 10, 0.);
     const std::string cameradist_str = std::to_string((int)std::nearbyint(cameradist));
-    ui_draw_text(s, rect.centerX() - 15, int(s->viz_rect.y + (bdr_s))+280, cameradist_str.c_str(), 36 * 2.0, COLOR_WHITE_ALPHA(0), "sans-semibold");
-    ui_draw_text(s, rect.centerX() + 65, int(s->viz_rect.y + (bdr_s))+280, "m", 26 * 1.6, COLOR_WHITE_ALPHA(0), "sans-semibold");
+    ui_draw_text(s, rect.centerX() - 15, int(s->viz_rect.y + (bdr_s))+290, cameradist_str.c_str(), 36 * 2.0, COLOR_WHITE_ALPHA(0), "sans-semibold");
+    ui_draw_text(s, rect.centerX() + 65, int(s->viz_rect.y + (bdr_s))+290, "m", 26 * 1.6, COLOR_WHITE_ALPHA(0), "sans-semibold");
   } 
 }
 
@@ -741,8 +735,11 @@ static void ui_draw_vision_event(UIState *s) {
     else if (s->scene.limitSpeedCamera < 120) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_110", 1.0f);}
   }
   if ((s->scene.mapSign == 195 || s->scene.mapSign == 197) && s->scene.limitSpeedCamera == 0 && s->scene.limitSpeedCameraDist != 0 && !s->scene.comma_stock_ui) {
-    {ui_draw_image(s, {s->viz_rect.centerX() - 500/2, s->viz_rect.centerY() - 500/2, 500, 500}, "speed_var", 0.25f);}
+    ui_draw_image(s, {s->viz_rect.centerX() - 500/2, s->viz_rect.centerY() - 500/2, 500, 500}, "speed_var", 0.25f);
+  } else if (s->scene.liveMapData.opkrspeedsign == 124 && s->scene.limitSpeedCamera == 0 && s->scene.limitSpeedCameraDist == 0 && !s->scene.comma_stock_ui) {
+    ui_draw_image(s, {s->viz_rect.centerX() - 500/2, s->viz_rect.centerY() - 500/2, 500, 500}, "speed_bump", 0.35f);
   }
+  
   
   //draw compass by opkr
   if (s->scene.gpsAccuracyUblox != 0.00 && !s->scene.comma_stock_ui) {
@@ -1390,6 +1387,7 @@ void ui_nvg_init(UIState *s) {
     {"speed_100", "../assets/img_100_speedahead.png"},
     {"speed_110", "../assets/img_110_speedahead.png"},
     {"speed_var", "../assets/img_var_speedahead.png"},
+    {"speed_bump", "../assets/img_speed_bump.png"},
     {"car_left", "../assets/img_car_left.png"},
     {"car_right", "../assets/img_car_right.png"},
     {"compass", "../assets/img_compass.png"},
