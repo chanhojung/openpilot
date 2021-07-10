@@ -626,13 +626,13 @@ static void ui_draw_vision_cameradist(UIState *s) {    // from 목사탕님 & Ne
   char str[64];
   snprintf(str, sizeof(str), "%.1f", (float)cameradistkm);
 
-  const Rect rect = {s->viz_rect.x + (bdr_s) + 2 * (184 + 15), int(s->viz_rect.y + (bdr_s)) + 210, 200, 100};   
+  const Rect rect = {s->viz_rect.x + (bdr_s) + 2 * (184 + 15), int(s->viz_rect.y + (bdr_s)) + 180, 200, 100};   
   NVGcolor color = COLOR_WHITE;
 
   if (s->is_speed_over_limit) {
-    color = nvgRGBA(255, 0, 0, 180);
+    color = nvgRGBA(200, 0, 0, 230);
   } else if (s->scene.limitSpeedCamera > 29 && !s->is_speed_over_limit) {
-    color = nvgRGBA(255, 0, 0, 180);
+    color = nvgRGBA(200, 0, 0, 230);
   } else {
     color = COLOR_WHITE_ALPHA(0);
   }
@@ -644,20 +644,20 @@ static void ui_draw_vision_cameradist(UIState *s) {    // from 목사탕님 & Ne
     color = COLOR_RED;
     ui_draw_rect(s->vg, rect, color, 10, 0.);
     //const std::string cameradist_str = std::to_string((int)std::nearbyint(cameradist));
-    ui_draw_text(s, rect.centerX() - 20, int(s->viz_rect.y + (bdr_s))+290, str, 40 * 2.0, COLOR_WHITE, "sans-bold");
-    ui_draw_text(s, rect.centerX() + 65, int(s->viz_rect.y + (bdr_s))+295, "km", 30 * 1.6, COLOR_WHITE, "sans-semibold");
+    ui_draw_text(s, rect.centerX() - 20, int(s->viz_rect.y + (bdr_s))+260, str, 40 * 2.0, COLOR_WHITE, "sans-bold");
+    ui_draw_text(s, rect.centerX() + 65, int(s->viz_rect.y + (bdr_s))+265, "km", 30 * 1.6, COLOR_WHITE, "sans-semibold");
   } else if (s->scene.limitSpeedCamera > 29){
     color = COLOR_WHITE_ALPHA(0);
     ui_draw_rect(s->vg, rect, color, 10, 0.);
     const std::string cameradist_str = std::to_string((int)std::nearbyint(cameradist));
-    ui_draw_text(s, rect.centerX() - 15, int(s->viz_rect.y + (bdr_s))+290, cameradist_str.c_str(), 40 * 2.0, COLOR_WHITE, "sans-bold");
-    ui_draw_text(s, rect.centerX() + 65, int(s->viz_rect.y + (bdr_s))+295, "m", 30 * 1.6, COLOR_WHITE, "sans-semibold");
+    ui_draw_text(s, rect.centerX() - 15, int(s->viz_rect.y + (bdr_s))+260, cameradist_str.c_str(), 40 * 2.0, COLOR_WHITE, "sans-bold");
+    ui_draw_text(s, rect.centerX() + 65, int(s->viz_rect.y + (bdr_s))+265, "m", 30 * 1.6, COLOR_WHITE, "sans-semibold");
   } else {
     color = COLOR_WHITE_ALPHA(0);
     ui_draw_rect(s->vg, rect, color, 10, 0.);
     const std::string cameradist_str = std::to_string((int)std::nearbyint(cameradist));
-    ui_draw_text(s, rect.centerX() - 15, int(s->viz_rect.y + (bdr_s))+290, cameradist_str.c_str(), 36 * 2.0, COLOR_WHITE_ALPHA(0), "sans-semibold");
-    ui_draw_text(s, rect.centerX() + 65, int(s->viz_rect.y + (bdr_s))+290, "m", 26 * 1.6, COLOR_WHITE_ALPHA(0), "sans-semibold");
+    ui_draw_text(s, rect.centerX() - 15, int(s->viz_rect.y + (bdr_s))+260, cameradist_str.c_str(), 36 * 2.0, COLOR_WHITE_ALPHA(0), "sans-semibold");
+    ui_draw_text(s, rect.centerX() + 65, int(s->viz_rect.y + (bdr_s))+260, "m", 26 * 1.6, COLOR_WHITE_ALPHA(0), "sans-semibold");
   } 
 }
 
@@ -690,7 +690,7 @@ static void ui_draw_vision_speed(UIState *s) {
       nvgLineTo(s->vg, viz_blinker_x - (viz_add*offset) - (viz_blinker_w/2), s->viz_rect.y + (header_h/2.1));
       nvgLineTo(s->vg, viz_blinker_x - (viz_add*offset)                    , s->viz_rect.y + (header_h/1.4));
       nvgClosePath(s->vg);
-      nvgFillColor(s->vg, nvgRGBA(255,100,0,(scene->blinker_blinkingrate<=100 && scene->blinker_blinkingrate>=30)?200:0));
+      nvgFillColor(s->vg, nvgRGBA(255,100,0,(scene->blinker_blinkingrate<=120 && scene->blinker_blinkingrate>=50)?200:0));
       nvgFill(s->vg);
     }
     if(s->scene.rightBlinker) {
@@ -699,15 +699,15 @@ static void ui_draw_vision_speed(UIState *s) {
       nvgLineTo(s->vg, viz_blinker_x + (viz_add*offset) + (viz_blinker_w*1.5), s->viz_rect.y + (header_h/2.1));
       nvgLineTo(s->vg, viz_blinker_x + (viz_add*offset) + viz_blinker_w      , s->viz_rect.y + (header_h/1.4));
       nvgClosePath(s->vg);
-      nvgFillColor(s->vg, nvgRGBA(255,100,0,(scene->blinker_blinkingrate<=100 && scene->blinker_blinkingrate>=30)?200:0));
+      nvgFillColor(s->vg, nvgRGBA(255,100,0,(scene->blinker_blinkingrate<=120 && scene->blinker_blinkingrate>=50)?200:0));
       nvgFill(s->vg);
     }    
   }
 
   NVGcolor val_color = COLOR_WHITE;
 
-  if( scene->brakePress && !s->scene.comma_stock_ui ) val_color = nvgRGBA(255, 0, 0, 100);
-  else if( scene->brakeLights && !s->scene.comma_stock_ui ) val_color = nvgRGBA(255, 80, 0, 100);
+  if( scene->brakePress && !s->scene.comma_stock_ui ) val_color = nvgRGBA(200, 0, 0, 200);
+  else if( scene->brakeLights && !s->scene.comma_stock_ui ) val_color = nvgRGBA(255, 80, 0, 200);
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
   ui_draw_text(s, s->viz_rect.centerX(), 240, speed_str.c_str(), 96 * 2.5, val_color, "sans-bold");
   ui_draw_text(s, s->viz_rect.centerX(), 320, s->scene.is_metric ? "km/h" : "mph", 36 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
@@ -723,16 +723,16 @@ static void ui_draw_vision_event(UIState *s) {
   const int center_y = int(s->viz_rect.y + (bdr_s));
 
   if (s->scene.limitSpeedCamera > 29 && !s->scene.comma_stock_ui) {
-    if (s->scene.limitSpeedCamera < 40) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_30", 1.0f);
+    if (s->scene.limitSpeedCamera < 40) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_30", 0.8f);
                                           ui_draw_image(s, {960-240, 540+50, 480, 480}, "speed_S30", 0.5f);} //중앙 스쿨존 이미지
-    else if (s->scene.limitSpeedCamera < 50) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_40", 1.0f);} 
-    else if (s->scene.limitSpeedCamera < 60) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_50", 1.0f);}
-    else if (s->scene.limitSpeedCamera < 70) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_60", 1.0f);} 
-    else if (s->scene.limitSpeedCamera < 80) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_70", 1.0f);} 
-    else if (s->scene.limitSpeedCamera < 90) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_80", 1.0f);} 
-    else if (s->scene.limitSpeedCamera < 100) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_90", 1.0f);}
-    else if (s->scene.limitSpeedCamera < 110) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_100", 1.0f);}
-    else if (s->scene.limitSpeedCamera < 120) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_110", 1.0f);}
+    else if (s->scene.limitSpeedCamera < 50) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_40", 0.8f);} 
+    else if (s->scene.limitSpeedCamera < 60) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_50", 0.8f);}
+    else if (s->scene.limitSpeedCamera < 70) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_60", 0.8f);} 
+    else if (s->scene.limitSpeedCamera < 80) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_70", 0.8f);} 
+    else if (s->scene.limitSpeedCamera < 90) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_80", 0.8f);} 
+    else if (s->scene.limitSpeedCamera < 100) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_90", 0.8f);}
+    else if (s->scene.limitSpeedCamera < 110) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_100", 0.8f);}
+    else if (s->scene.limitSpeedCamera < 120) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_110", 0.8f);}
   }
   if ((s->scene.mapSign == 195 || s->scene.mapSign == 197) && s->scene.limitSpeedCamera == 0 && s->scene.limitSpeedCameraDist != 0 && !s->scene.comma_stock_ui) {
     ui_draw_image(s, {s->viz_rect.centerX() - 500/2, s->viz_rect.centerY() - 500/2, 500, 500}, "speed_var", 0.25f);
@@ -1138,15 +1138,17 @@ static void ui_draw_vision_header(UIState *s) {
 
   ui_fill_rect(s->vg, {s->viz_rect.x, s->viz_rect.y, s->viz_rect.w, header_h}, gradient);
 
+  ui_draw_vision_speed(s); //중앙속도 & 깜빡이
+  ui_draw_vision_event(s); //과속카메라 속도
+
   if (!s->scene.comma_stock_ui) {
-    ui_draw_vision_cameradist(s);  
+    ui_draw_vision_cameradist(s); //과속카메라 거리 
     ui_draw_vision_maxspeed(s);
     ui_draw_vision_cruise_speed(s);
   } else {
     ui_draw_vision_maxspeed_org(s);
   }
-  ui_draw_vision_speed(s);
-  ui_draw_vision_event(s);
+
   if (!s->scene.comma_stock_ui) {
     bb_ui_draw_UI(s);
     ui_draw_tpms(s);

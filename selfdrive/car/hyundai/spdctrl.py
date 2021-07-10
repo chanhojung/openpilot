@@ -171,11 +171,14 @@ class Spdctrl(SpdController):
         elif 20 <= dRel < 149 and lead_objspd < -20 and not self.map_decel_only: #정지 차량 및 급감속 차량 발견 시
             self.cut_in = False
             if dRel >= 50:
-                self.seq_step_debug = "정차차량 감속"
-                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 8, -10)
+                self.seq_step_debug = "정차차량 감속-20"
+                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS,  10, -20)
+            elif dRel >= 40:
+                self.seq_step_debug = "정차차량 감속-15"
+                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 10, -15)
             elif dRel >= 30:
-                self.seq_step_debug = "정차차량 감속"
-                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 20, -10)
+                self.seq_step_debug = "정차차량 감속-10"
+                lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 10, -10)
         elif self.cruise_set_speed_kph > int(round((CS.clu_Vanz))) and not self.map_decel_only:  #이온설정속도가 차량속도보다 큰경우
             self.cut_in = False
             if 10 > dRel > 3 and lead_objspd <= 0 and 1 < int(CS.clu_Vanz) <= 7 and CS.VSetDis < 45 and ((int(round(self.target_speed)) > int(CS.VSetDis) and self.target_speed != 0) or self.target_speed == 0):
