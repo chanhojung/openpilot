@@ -76,10 +76,6 @@ class LateralPlanner():
     self.t_idxs = np.arange(TRAJECTORY_SIZE)
     self.y_pts = np.zeros(TRAJECTORY_SIZE)
 
-    self.lane_change_adjust = [0.8, 1.0, 1.3, 1.5]
-    self.lane_change_adjust_vel = [8.3, 16, 22, 30]
-    self.lane_change_adjust_new = 0.0
-
     self.standstill_elapsed_time = 0.0
     self.v_cruise_kph = 0
     self.stand_still = False
@@ -174,20 +170,18 @@ class LateralPlanner():
       # starting
       elif self.lane_change_state == LaneChangeState.laneChangeStarting:
         # fade out over .5s
-        self.lane_change_adjust_new = interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)
         self.lane_change_ll_prob = max(self.lane_change_ll_prob - 2*DT_MDL, 0.0)
-        #self.lane_change_ll_prob = max(self.lane_change_ll_prob - self.lane_change_adjust_new*DT_MDL, 0.0)
         # 98% certainty
-        if lane_change_prob < 0.03 and self.lane_change_ll_prob < 0.02:
+        if lane_change_prob < 0.02 and self.lane_change_ll_prob < 0.01:
           self.lane_change_state = LaneChangeState.laneChangeFinishing
 
       # finishing
       elif self.lane_change_state == LaneChangeState.laneChangeFinishing:
         # fade in laneline over 1s
         self.lane_change_ll_prob = min(self.lane_change_ll_prob + DT_MDL, 1.0)
-        if one_blinker and self.lane_change_ll_prob > 0.98:
+        if one_blinker and self.lane_change_ll_prob > 0.99:
           self.lane_change_state = LaneChangeState.preLaneChange
-        elif self.lane_change_ll_prob > 0.98:
+        elif self.lane_change_ll_prob > 0.99:
           self.lane_change_state = LaneChangeState.off
 
     if self.lane_change_state in [LaneChangeState.off, LaneChangeState.preLaneChange]:
