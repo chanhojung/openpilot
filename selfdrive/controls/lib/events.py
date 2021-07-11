@@ -358,7 +358,7 @@ EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, boo
     # LOW priority to overcome Cruise Error
     ET.PERMANENT: Alert(
       "커뮤니티 기능 감지됨",
-      "개발자 설정에서 커뮤니티 기능을 활성화하세요",
+      "토글메뉴에서 커뮤니티 기능을 활성화하세요",
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
   },
@@ -377,25 +377,25 @@ EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, boo
   EventName.stockAeb: {
     ET.PERMANENT: Alert(
       "브레이크!",
-      "순정 AEB: 충돌 위험",
+      "순정 AEB: 추돌 위험",
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.fcw, AudibleAlert.none, 1., 2., 2.),
-    ET.NO_ENTRY: NoEntryAlert("순정 AEB: 충돌 위험"),
+    ET.NO_ENTRY: NoEntryAlert("순정 AEB: 추돌 위험"),
   },
 
   EventName.stockFcw: {
     ET.PERMANENT: Alert(
       "브레이크!",
-      "순정 FCW: 충돌 위험",
+      "순정 FCW: 추돌 위험",
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.fcw, AudibleAlert.none, 1., 2., 2.),
-    ET.NO_ENTRY: NoEntryAlert("순정 FCW: 충돌 위험"),
+    ET.NO_ENTRY: NoEntryAlert("순정 FCW: 추돌 위험"),
   },
 
   EventName.fcw: {
     ET.PERMANENT: Alert(
       "브레이크!",
-      "충돌 위험",
+      "추돌 위험",
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.fcw, AudibleAlert.chimeWarningRepeat, 1., 2., 2.),
   },

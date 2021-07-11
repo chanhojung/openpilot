@@ -105,7 +105,7 @@ class Planner():
 
     accel_limits = [A_CRUISE_MIN, A_CRUISE_MAX]
     accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngleDeg, accel_limits, self.CP)
-    if force_slow_decel:
+    if force_slow_decel and False: # awareness decel is disabled for now:
       # if required so, force a smooth deceleration
       accel_limits_turns[1] = min(accel_limits_turns[1], AWARENESS_DECEL)
       accel_limits_turns[0] = min(accel_limits_turns[0], accel_limits_turns[1])
