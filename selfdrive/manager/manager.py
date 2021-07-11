@@ -141,6 +141,7 @@ def manager_init():
     ("CruiseGap3", "15"),
     ("CruiseGap4", "20"),
     ("DynamicTR", "2"),
+    ("OpkrBattLess", "0"),
   ]
   if not PC:
     default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))

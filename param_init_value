@@ -77,3 +77,8 @@ OpkrMonitorEyesThreshold:75
 OpkrMonitorNormalEyesThreshold:50
 OpkrMonitorBlinkThreshold:50
 OpkrFanSpeedGain:0
+CruiseGap1:10
+CruiseGap2:12
+CruiseGap3:15
+CruiseGap4:20
+DynamicTR:2

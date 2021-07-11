@@ -169,6 +169,7 @@ typedef struct UIScene {
   bool driving_record;
   bool move_to_background;
   float steer_actuator_delay;
+  bool batt_less;
 
   cereal::DeviceState::Reader deviceState;
   cereal::RadarState::LeadData::Reader lead_data[2];

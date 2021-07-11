@@ -221,21 +221,21 @@ class CarInterface(CarInterfaceBase):
     ret.brakeMaxV = [0.7, 3.0]   # max brake allowed
 
     ret.longitudinalTuning.kpBP = [0., 4., 9., 17., 23., 31.]
-    ret.longitudinalTuning.kpV = [0.62, 0.72, 0.54, 0.29, 0.26, 0.24]
+    ret.longitudinalTuning.kpV = [1.3, 1.0, 0.8, 0.75, 0.65, 0.55]
     ret.longitudinalTuning.kiBP = [0., 4., 9., 17., 23., 31.]
-    ret.longitudinalTuning.kiV = [0.017, 0.023, 0.024, 0.0175, 0.0175, 0.0175]
+    ret.longitudinalTuning.kiV = [0.33, 0.22, 0.21, 0.17, 0.15, 0.13]
 
     ret.longitudinalTuning.deadzoneBP = [0., 4., 31.]
-    ret.longitudinalTuning.deadzoneV = [0., 0.1, 0.2]
+    ret.longitudinalTuning.deadzoneV = [0., 0.1, 0.1]
     ret.longitudinalTuning.kdBP = [0., 4., 9., 17., 23., 31.]
-    ret.longitudinalTuning.kdV = [0.65, 0.75, 0.7, 0.6, 0.5, 0.5]
+    ret.longitudinalTuning.kdV = [0.7, 0.65, 0.5, 0.4, 0.3, 0.2]
     ret.longitudinalTuning.kfBP = [0., 4., 9., 17., 23., 31.]
     ret.longitudinalTuning.kfV = [1., 1.05, 1.05, 1., 1., 1.]
 
     ret.enableBsm = 0x58b in fingerprint[0]
 
     ret.stoppingControl = True
-    ret.startAccel = 0.2
+    ret.startAccel = 0.3
 
     ret.standStill = False
     ret.vCruisekph = 0

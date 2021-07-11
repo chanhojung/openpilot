@@ -431,6 +431,18 @@ public:
   }
 };
 
+class BattLessToggle : public ToggleControl {
+  Q_OBJECT
+
+public:
+  BattLessToggle() : ToggleControl("배터리리스 사용", "배터리리스 이온용 토글입니다. 관련 설정이 적용됩니다.", "../assets/offroad/icon_shell.png", Params().getBool("OpkrBattLess")) {
+    QObject::connect(this, &BattLessToggle::toggleFlipped, [=](int state) {
+      char value = state ? '1' : '0';
+      Params().put("OpkrBattLess", &value, 1);
+    });
+  }
+};
+
 // 오픈파일럿 미리보기
 class OpenpilotView : public AbstractControl {
   Q_OBJECT

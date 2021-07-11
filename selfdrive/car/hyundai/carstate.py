@@ -39,12 +39,6 @@ class CarState(CarStateBase):
 
     self.driverAcc_time = 0
 
-    # blinker
-    self.left_blinker_flash = 0
-    self.right_blinker_flash = 0  
-    self.TSigLHSw = 0
-    self.TSigRHSw = 0
-
     self.apply_steer = 0.
     
     self.steer_anglecorrection = float(int(Params().get("OpkrSteerAngleCorrection", encoding="utf8")) * 0.1)
@@ -93,6 +87,8 @@ class CarState(CarStateBase):
     ret.steeringAngleDeg = cp_sas.vl["SAS11"]["SAS_Angle"] - self.steer_anglecorrection
     ret.steeringRateDeg = cp_sas.vl["SAS11"]["SAS_Speed"]
     ret.yawRate = cp.vl["ESP12"]["YAW_RATE"]
+    ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_lamp(
+      50, cp.vl["CGW1"]["CF_Gway_TurnSigLh"], cp.vl["CGW1"]["CF_Gway_TurnSigRh"])
     ret.steeringTorque = cp_mdps.vl["MDPS12"]["CR_Mdps_StrColTq"]
     ret.steeringTorqueEps = cp_mdps.vl["MDPS12"]["CR_Mdps_OutTq"]
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
@@ -102,8 +98,6 @@ class CarState(CarStateBase):
     else:
       self.mdps_error_cnt += 1 if cp_mdps.vl["MDPS12"]["CF_Mdps_ToiUnavail"] != 0 else -self.mdps_error_cnt
       ret.steerWarning = self.mdps_error_cnt > 100 #cp_mdps.vl["MDPS12"]["CF_Mdps_ToiUnavail"] != 0
-
-    ret.leftBlinker, ret.rightBlinker = self.update_blinker(cp)
 
     self.VSetDis = cp_scc.vl["SCC11"]["VSetDis"]
     ret.vSetDis = self.VSetDis
@@ -312,31 +306,6 @@ class CarState(CarStateBase):
 
     return ret
 
-  def update_blinker(self, cp):
-    self.TSigLHSw = cp.vl["CGW1"]["CF_Gway_TSigLHSw"]
-    self.TSigRHSw = cp.vl["CGW1"]["CF_Gway_TSigRHSw"]
-    leftBlinker = cp.vl["CGW1"]["CF_Gway_TurnSigLh"] != 0
-    rightBlinker = cp.vl["CGW1"]["CF_Gway_TurnSigRh"] != 0
-
-    if leftBlinker and not rightBlinker:
-      self.left_blinker_flash = 50
-      self.right_blinker_flash = 0
-    elif rightBlinker and not leftBlinker:
-      self.right_blinker_flash = 50
-      self.left_blinker_flash = 0
-    elif leftBlinker and rightBlinker:
-      self.left_blinker_flash = 50
-      self.right_blinker_flash = 50
-
-    if  self.left_blinker_flash:
-      self.left_blinker_flash -= 1
-    if  self.right_blinker_flash:
-      self.right_blinker_flash -= 1
-
-    leftBlinker = self.left_blinker_flash != 0
-    rightBlinker = self.right_blinker_flash != 0
-    return  leftBlinker, rightBlinker
-
   @staticmethod
   def get_can_parser(CP):
     signals = [
@@ -355,9 +324,7 @@ class CarState(CarStateBase):
       ("CF_Gway_AstDrSw", "CGW1", 0),       # Passenger door
       ("CF_Gway_RLDrSw", "CGW2", 0),        # Rear reft door
       ("CF_Gway_RRDrSw", "CGW2", 0),        # Rear right door
-      ("CF_Gway_TSigLHSw", "CGW1", 0),
       ("CF_Gway_TurnSigLh", "CGW1", 0),
-      ("CF_Gway_TSigRHSw", "CGW1", 0),
       ("CF_Gway_TurnSigRh", "CGW1", 0),
       ("CF_Gway_ParkBrakeSw", "CGW1", 0),
 
