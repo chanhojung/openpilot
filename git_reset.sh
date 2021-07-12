@@ -10,4 +10,9 @@ cd /data/openpilot
 /data/data/com.termux/files/usr/bin/git reset --hard HEAD
 /data/data/com.termux/files/usr/bin/git pull
 
+if [ -f "/data/openpilot/prebuilt" ]; then
+  pkill -f thermald
+  rm -f /data/openpilot/prebuilt
+fi
+
 reboot

@@ -104,7 +104,7 @@ class SpdctrlLong(SpdController):
               lead_wait_cmd = 15
         elif int(round(self.target_speed)) < int(CS.VSetDis) and self.map_enable and ((int(round(self.target_speed)) < int(round(self.cruise_set_speed_kph))) and self.target_speed != 0):
             self.seq_step_debug = "맵기반감속"
-            lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 35, -1)
+            lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 25, -1)
         elif CC.res_speed != 0 and CC.res_speed < int(CS.VSetDis):
             self.seq_step_debug = "RES속도조정"
             lead_wait_cmd, lead_set_speed = self.get_tm_speed(CS, 20, -1)
@@ -169,7 +169,7 @@ class SpdctrlLong(SpdController):
 
         # 2. 커브 감속.
         #if self.cruise_set_speed_kph >= 100:
-        if CS.out.cruiseState.modeSel == 1 and sm['lateralPlan'].laneChangeState == LaneChangeState.off and not self.map_decel_only:
+        if CS.out.cruiseState.modeSel == 1 and sm['lateralPlan'].laneChangeState == LaneChangeState.off and not (CS.out.leftBlinker or CS.out.rightBlinker)and not self.map_decel_only:
             if curve_speed <= 35+self.curv_hold5 and CS.clu_Vanz > 40 and CS.lead_distance >= 15:
                 set_speed = min(40, self.cruise_set_speed_kph - int(CS.clu_Vanz * 0.2))
                 self.seq_step_debug = "커브감속-5"

@@ -13,5 +13,9 @@ REMOTE_HASH=$(git rev-parse --verify origin/$BRANCH)
 /data/data/com.termux/files/usr/bin/git pull
 
 if [ "$HASH" != "$REMOTE_HASH" ]; then
+  if [ -f "/data/openpilot/prebuilt" ]; then
+    pkill -f thermald
+    rm -f /data/openpilot/prebuilt
+  fi
   reboot
 fi

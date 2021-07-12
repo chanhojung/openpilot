@@ -188,7 +188,7 @@ class Planner():
     if self.map_enabled:
       longitudinalPlan.mapSign = float(self.map_sign)
       cam_distance_calc = 0
-      cam_distance_calc = interp(self.vego*CV.MS_TO_KPH, [30,110], [2.5,4])  # 감속 기본 거리
+      cam_distance_calc = interp(self.vego*CV.MS_TO_KPH, [30,110], [2.8,4.5])  # 감속 기본 거리
       consider_speed = interp((self.vego*CV.MS_TO_KPH - self.target_speed_map), [0,40], [1, 2]) # 속도차에 따른 거리 추가
       if self.target_speed_map > 29 and self.target_speed_map_sign:
         longitudinalPlan.targetSpeedCamera = float(self.target_speed_map)
