@@ -724,7 +724,7 @@ static void ui_draw_vision_event(UIState *s) {
 
   if (s->scene.limitSpeedCamera > 29 && !s->scene.comma_stock_ui) {
     if (s->scene.limitSpeedCamera < 40) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_30", 0.8f);
-                                          ui_draw_image(s, {960-240, 540+50, 480, 480}, "speed_S30", 0.5f);} //중앙 스쿨존 이미지
+                                          ui_draw_image(s, {960-240, 540+50, 480, 480}, "speed_S30", 0.35f);} //중앙 스쿨존 이미지
     else if (s->scene.limitSpeedCamera < 50) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_40", 0.8f);} 
     else if (s->scene.limitSpeedCamera < 60) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_50", 0.8f);}
     else if (s->scene.limitSpeedCamera < 70) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_60", 0.8f);} 
@@ -735,9 +735,9 @@ static void ui_draw_vision_event(UIState *s) {
     else if (s->scene.limitSpeedCamera < 120) {ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_110", 0.8f);}
   }
   if ((s->scene.mapSign == 195 || s->scene.mapSign == 197) && s->scene.limitSpeedCamera == 0 && s->scene.limitSpeedCameraDist != 0 && !s->scene.comma_stock_ui) {
-    ui_draw_image(s, {s->viz_rect.centerX() - 500/2, s->viz_rect.centerY() - 500/2, 500, 500}, "speed_var", 0.25f);
+    ui_draw_image(s, {center_x, center_y, 200, 200}, "speed_var", 0.25f);
   } else if (s->scene.liveMapData.opkrspeedsign == 124 && s->scene.limitSpeedCamera == 0 && s->scene.limitSpeedCameraDist == 0 && !s->scene.comma_stock_ui) {
-    ui_draw_image(s, {s->viz_rect.centerX() - 500/2, s->viz_rect.centerY() - 500/2, 500, 500}, "speed_bump", 0.35f);
+    ui_draw_image(s, {960-240, 540+20, 480, 480}, "speed_bump", 0.35f);
   }
   
   
