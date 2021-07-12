@@ -86,6 +86,8 @@ function two_init {
       cd $DIR
       git clean -xdf
       git submodule foreach --recursive git clean -xdf
+    elif [ -f "$BASEDIR/prebuilt" ]; then
+      python /data/openpilot/common/spinner.py &
     fi
 
     "$DIR/installer/updater/updater" "file://$DIR/installer/updater/update.json"
