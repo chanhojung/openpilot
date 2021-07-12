@@ -640,11 +640,11 @@ static void ui_draw_vision_cameradist(UIState *s) {    // from 목사탕님 & Ne
   ui_fill_rect(s->vg, rect, color, 20.);
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE); 
 
-  if (s->scene.limitSpeedCamera > 1000) {
+  if (s->scene.mapSign == 165 && s->scene.limitSpeedCameraDist > 1000){
     color = COLOR_RED;
     ui_draw_rect(s->vg, rect, color, 10, 0.);
     //const std::string cameradist_str = std::to_string((int)std::nearbyint(cameradist));
-    ui_draw_text(s, rect.centerX() - 20, int(s->viz_rect.y + (bdr_s))+260, str, 40 * 2.0, COLOR_WHITE, "sans-bold");
+    ui_draw_text(s, rect.centerX() - 20, int(s->viz_rect.y + (bdr_s))+260, str, 42 * 2.0, COLOR_WHITE, "sans-bold");
     ui_draw_text(s, rect.centerX() + 65, int(s->viz_rect.y + (bdr_s))+265, "km", 30 * 1.6, COLOR_WHITE, "sans-semibold");
   } else if (s->scene.limitSpeedCamera > 29){
     color = COLOR_WHITE_ALPHA(0);
