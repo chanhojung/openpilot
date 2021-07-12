@@ -86,8 +86,6 @@ function two_init {
       cd $DIR
       git clean -xdf
       git submodule foreach --recursive git clean -xdf
-    elif [ -f "$BASEDIR/prebuilt" ]; then
-      python /data/openpilot/common/spinner.py &
     fi
 
     "$DIR/installer/updater/updater" "file://$DIR/installer/updater/update.json"
@@ -173,6 +171,11 @@ function launch {
 
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
+
+  # spinner
+  if [ -f "$BASEDIR/prebuilt" ]; then
+    python /data/openpilot/common/spinner.py &
+  fi
 
   # ssh key restore
   if [ -f "/data/params/d/OpkrSSHLegacy" ]; then

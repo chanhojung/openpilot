@@ -220,7 +220,7 @@ def manager_prepare():
 
 
 def manager_cleanup():
-  if EON and params.get_bool("OpkrApksEnable"):
+  if EON and Params().get_bool("OpkrApksEnable"):
     pm_apply_packages('disable')
 
   for p in managed_processes.values():

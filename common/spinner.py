@@ -50,7 +50,7 @@ if __name__ == "__main__":
   if PREBUILT:
     with Spinner() as s:
       s.update("prebuilt on, fast booting...")
-      time.sleep(10.0)
+      time.sleep(7.0)
   else:
     with Spinner() as s:
       s.update("Spinner text")
