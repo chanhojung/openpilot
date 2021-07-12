@@ -479,9 +479,9 @@ class CarController():
         can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL)) if not self.longcontrol \
          else can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.SET_DECEL, clu11_speed, CS.CP.sccBus)) # auto res but set_decel to set current speed
         self.v_cruise_kph_auto_res = int(CS.clu_Vanz)
-        self.res_speed_timer = 15
+        self.res_speed_timer = 30
       if self.auto_res_timer <= 0:
-        self.auto_res_timer = randint(8, 10)
+        self.auto_res_timer = randint(10, 12)
     elif self.auto_res_timer > 0 and self.opkr_cruise_auto_res:
       self.auto_res_timer -= 1
 
