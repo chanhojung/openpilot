@@ -27,9 +27,6 @@ sys.path.append(os.path.join(PYEXTRADIR, "pyextra"))
 
 
 def manager_init() -> None:
-  # update system time from panda
-  set_time(cloudlog)
-
   # save boot log
   #save_bootlog()
 
