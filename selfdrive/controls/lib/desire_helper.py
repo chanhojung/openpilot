@@ -89,7 +89,7 @@ class DesireHelper:
     self.lane_change_adjust = [float(Decimal(Params().get("LCTimingFactor30", encoding="utf8")) * Decimal('0.01')), float(Decimal(Params().get("LCTimingFactor60", encoding="utf8")) * Decimal('0.01')),
      float(Decimal(Params().get("LCTimingFactor80", encoding="utf8")) * Decimal('0.01')), float(Decimal(Params().get("LCTimingFactor110", encoding="utf8")) * Decimal('0.01'))]
     self.lane_change_adjust_vel = [30*CV.KPH_TO_MS, 60*CV.KPH_TO_MS, 80*CV.KPH_TO_MS, 110*CV.KPH_TO_MS]
-    self.lane_change_adjust_new = 2
+    self.lane_change_adjust_new = 2.0
     self.lane_change_adjust_enable = Params().get_bool("LCTimingFactorEnable")
 
     self.output_scale = 0.0
@@ -166,6 +166,8 @@ class DesireHelper:
               self.lane_change_adjust_new = interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)
           else:
             self.lane_change_adjust_new = interp(v_ego, self.lane_change_adjust_vel, self.lane_change_adjust)
+        else:
+          self.lane_change_adjust_new = 2.0
       # LaneChangeState.preLaneChange
       elif self.lane_change_state == LaneChangeState.preLaneChange:
         self.lane_change_wait_timer += DT_MDL
@@ -180,14 +182,14 @@ class DesireHelper:
         self.lane_change_ll_prob = max(self.lane_change_ll_prob - self.lane_change_adjust_new*DT_MDL, 0.0)
 
         # 98% certainty
-        if lane_change_prob < 0.02 and self.lane_change_ll_prob < 0.01:
+        if lane_change_prob < 0.01 and self.lane_change_ll_prob < 0.01:
           self.lane_change_state = LaneChangeState.laneChangeFinishing
 
       # LaneChangeState.laneChangeFinishing
       elif self.lane_change_state == LaneChangeState.laneChangeFinishing:
         # fade in laneline over 1s
         if USE_LEGACY_LANE_MODEL:
-          self.lane_change_ll_prob = min(self.lane_change_ll_prob + DT_MDL*0.9, 1.0)
+          self.lane_change_ll_prob = min(self.lane_change_ll_prob + DT_MDL, 1.0)
         else:
           self.lane_change_ll_prob = min(self.lane_change_ll_prob + DT_MDL, 1.0)
         if one_blinker and self.lane_change_ll_prob > 0.99:
