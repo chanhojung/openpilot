@@ -2,7 +2,7 @@ from opendbc.car import Bus, get_safety_config, structs
 from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, \
                                                    CANFD_UNSUPPORTED_LONGITUDINAL_CAR, \
-                                                   UNSUPPORTED_LONGITUDINAL_CAR, HyundaiSafetyFlags, LEGACY_SAFETY_MODE_CAR
+                                                   UNSUPPORTED_LONGITUDINAL_CAR, HyundaiSafetyFlags
 from opendbc.car.hyundai.radar_interface import RADAR_START_ADDR
 from opendbc.car.interfaces import CarInterfaceBase
 from opendbc.car.disable_ecu import disable_ecu
@@ -135,7 +135,16 @@ class CarInterface(CarInterfaceBase):
       else:
         ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.hyundai, 0)]
 
-      if ret.flags & HyundaiFlags.CAMERA_SCC:
+      if ret.sccBus == 2:
+        ret.scc13Available = 1290 in fingerprint[0] or 1290 in fingerprint[2]
+        ret.scc14Available = 905 in fingerprint[0] or 905 in fingerprint[2]
+        ret.openpilotLongitudinalControl = True
+        ret.radarUnavailable = False
+        ret.pcmCruise = True
+      else:
+        ret.pcmCruise = not ret.openpilotLongitudinalControl
+
+      if ret.flags & HyundaiFlags.CAMERA_SCC or ret.sccBus == 2:
         ret.safetyConfigs[0].safetyParam |= HyundaiSafetyFlags.CAMERA_SCC.value
 
       # These cars have the LFA button on the steering wheel
@@ -183,25 +192,6 @@ class CarInterface(CarInterfaceBase):
     ret.vEgoStarting = 0.1
     ret.startAccel = 1.0
     ret.longitudinalActuatorDelay = 0.5
-
-    if ret.flags & HyundaiFlags.CANFD:
-      pass
-    else:
-      if candidate in LEGACY_SAFETY_MODE_CAR:
-        # these cars require a special panda safety mode due to missing counters and checksums in the messages
-        ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.hyundaiLegacy)]
-      else:
-        ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.hyundai, 0)]
-
-      if ret.sccBus == 2:
-        ret.scc13Available = 1290 in fingerprint[0] or 1290 in fingerprint[2]
-        ret.scc14Available = 905 in fingerprint[0] or 905 in fingerprint[2]
-        ret.openpilotLongitudinalControl = True
-        ret.radarUnavailable = False
-        ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.hyundaiCommunity)]
-        ret.pcmCruise = True
-      else:
-        ret.pcmCruise = not ret.openpilotLongitudinalControl
 
     if (ret.openpilotLongitudinalControl and not kisaLongAlt) or params.get_bool("ExperimentalLongitudinalEnabled"):
       ret.safetyConfigs[-1].safetyParam |= HyundaiSafetyFlags.LONG.value
