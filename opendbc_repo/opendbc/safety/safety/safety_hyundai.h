@@ -135,16 +135,16 @@ static void hyundai_rx_hook(const CANPacket_t *to_push) {
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
 
-  if(hyundai_kisa_community_eng) {
-    hyundai_common_cruise_state_check_alt(true);
-  }
-
   // SCC12 is on bus 2 for camera-based SCC cars, bus 0 on all others
   if (addr == 0x421) {
     if (((bus == 0) && !hyundai_camera_scc) || ((bus == 2) && hyundai_camera_scc)) {
       // 2 bits: 13-14
       int cruise_engaged = (GET_BYTES(to_push, 0, 4) >> 13) & 0x3U;
       hyundai_common_cruise_state_check(cruise_engaged);
+      if (hyundai_legacy) {
+        bool main_button = GET_BIT(to_push, 0U);
+        hyundai_common_cruise_state_check_alt(main_button);
+      }
     }
   }
 
