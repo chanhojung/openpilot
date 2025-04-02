@@ -135,16 +135,17 @@ static void hyundai_rx_hook(const CANPacket_t *to_push) {
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
 
+  if ((addr == 0x420) && hyundai_kisa_community_eng) {
+    bool main_button = GET_BIT(to_push, 0U);
+    hyundai_common_cruise_state_check_alt(main_button);
+  }
+
   // SCC12 is on bus 2 for camera-based SCC cars, bus 0 on all others
-  if (addr == 0x421) {
+  if ((addr == 0x421) && !hyundai_kisa_community_eng) {
     if (((bus == 0) && !hyundai_camera_scc) || ((bus == 2) && hyundai_camera_scc)) {
       // 2 bits: 13-14
       int cruise_engaged = (GET_BYTES(to_push, 0, 4) >> 13) & 0x3U;
       hyundai_common_cruise_state_check(cruise_engaged);
-      if (hyundai_legacy) {
-        bool main_button = GET_BIT(to_push, 0U);
-        hyundai_common_cruise_state_check_alt(main_button);
-      }
     }
   }
 
@@ -156,7 +157,7 @@ static void hyundai_rx_hook(const CANPacket_t *to_push) {
     }
 
     // ACC steering wheel buttons
-    if (addr == 0x4F1 && !hyundai_kisa_community_eng) {
+    if ((addr == 0x4F1) && !hyundai_kisa_community_eng) {
       int cruise_button = GET_BYTE(to_push, 0) & 0x7U;
       bool main_button = GET_BIT(to_push, 3U);
       bool lfa_button = false;
@@ -357,7 +358,7 @@ static safety_config hyundai_init(uint16_t param) {
 static safety_config hyundai_legacy_init(uint16_t param) {
   // older hyundai models have less checks due to missing counters and checksums
   static RxCheck hyundai_legacy_rx_checks[] = {
-    // HYUNDAI_COMMON_RX_CHECKS(true)
+    HYUNDAI_COMMON_RX_CHECKS(true)
     // HYUNDAI_SCC12_ADDR_CHECK(0)
   };
 
