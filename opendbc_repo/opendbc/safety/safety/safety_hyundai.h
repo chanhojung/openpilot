@@ -2,6 +2,7 @@
 
 #include "safety_declarations.h"
 #include "safety_hyundai_common.h"
+#include <stdio.h>
 
 #define HYUNDAI_LIMITS(steer, rate_up, rate_down) { \
   .max_steer = (steer), \
