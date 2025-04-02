@@ -337,10 +337,10 @@ static safety_config hyundai_init(uint16_t param) {
 
     ret = BUILD_SAFETY_CFG(hyundai_cam_scc_rx_checks, HYUNDAI_CAMERA_SCC_TX_MSGS);
   } else {
-    static RxCheck hyundai_rx_checks[] = {
-      HYUNDAI_COMMON_RX_CHECKS(false)
-      HYUNDAI_SCC12_ADDR_CHECK(0)
-    };
+    // static RxCheck hyundai_rx_checks[] = {
+    //   HYUNDAI_COMMON_RX_CHECKS(false)
+    //   HYUNDAI_SCC12_ADDR_CHECK(0)
+    // };
 
     static RxCheck hyundai_rx_legacy_checks[] = {
       HYUNDAI_LEGACY_RX_CHECKS
