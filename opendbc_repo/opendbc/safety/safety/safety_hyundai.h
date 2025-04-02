@@ -154,8 +154,11 @@ static void hyundai_rx_hook(const CANPacket_t *to_push) {
       update_sample(&torque_driver, torque_driver_new);
     }
 
+    printf("bus 0 is now\n");
     if (addr == 0x420) {
+      printf("addr 0x420\n");
       bool main_button = GET_BIT(to_push, 0U);
+      printf("main button = %d\n", main_button);
       hyundai_common_cruise_state_check_alt(main_button);
     }
 
@@ -343,7 +346,6 @@ static safety_config hyundai_init(uint16_t param) {
     // };
 
     static RxCheck hyundai_rx_legacy_checks[] = {
-      HYUNDAI_LEGACY_RX_CHECKS
     };
 
     static RxCheck hyundai_fcev_rx_checks[] = {
