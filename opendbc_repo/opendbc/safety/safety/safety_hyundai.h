@@ -135,13 +135,12 @@ static void hyundai_rx_hook(const CANPacket_t *to_push) {
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
 
-  controls_allowed = true;
   // if ((addr == 0x420) && hyundai_kisa_community_eng) {
   //   bool main_button = GET_BIT(to_push, 0U);
   //   hyundai_common_cruise_state_check_alt(main_button);
   // }
 
-  // // SCC12 is on bus 2 for camera-based SCC cars, bus 0 on all others
+  // SCC12 is on bus 2 for camera-based SCC cars, bus 0 on all others
   // if ((addr == 0x421) && !hyundai_kisa_community_eng) {
   //   if (((bus == 0) && !hyundai_camera_scc) || ((bus == 2) && hyundai_camera_scc)) {
   //     // 2 bits: 13-14
@@ -157,13 +156,13 @@ static void hyundai_rx_hook(const CANPacket_t *to_push) {
       update_sample(&torque_driver, torque_driver_new);
     }
 
-    // // ACC steering wheel buttons
-    // if ((addr == 0x4F1) && !hyundai_kisa_community_eng) {
-    //   int cruise_button = GET_BYTE(to_push, 0) & 0x7U;
-    //   bool main_button = GET_BIT(to_push, 3U);
-    //   bool lfa_button = false;
-    //   hyundai_common_cruise_buttons_check(cruise_button, main_button, lfa_button);
-    // }
+    // ACC steering wheel buttons
+    if (addr == 0x4F1) {
+      int cruise_button = GET_BYTE(to_push, 0) & 0x7U;
+      bool main_button = GET_BIT(to_push, 3U);
+      bool lfa_button = false;
+      hyundai_common_cruise_buttons_check(cruise_button, main_button, lfa_button);
+    }
 
     // gas press, different for EV, hybrid, and ICE models
     if ((addr == 0x371) && hyundai_ev_gas_signal) {

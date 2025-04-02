@@ -100,8 +100,8 @@ void hyundai_common_cruise_buttons_check(const int cruise_button, const bool mai
     hyundai_last_button_interaction = MIN(hyundai_last_button_interaction + 1U, HYUNDAI_PREV_BUTTON_SAMPLES);
   }
 
-  if (hyundai_longitudinal || hyundai_kisa_community_eng) {
-    if (lfa_button) {
+  if (hyundai_longitudinal || true) {
+    if (main_button) {
       lfa_button_prev = true;
     } else if (lfa_button_prev && hyundai_last_button_interaction == HYUNDAI_PREV_BUTTON_SAMPLES) {
       controls_allowed = !controls_allowed;
