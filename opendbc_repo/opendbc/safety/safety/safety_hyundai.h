@@ -2,7 +2,6 @@
 
 #include "safety_declarations.h"
 #include "safety_hyundai_common.h"
-#include <stdio.h>
 
 #define HYUNDAI_LIMITS(steer, rate_up, rate_down) { \
   .max_steer = (steer), \
@@ -147,18 +146,22 @@ static void hyundai_rx_hook(const CANPacket_t *to_push) {
   //   }
   // }
 
+  puts("rx message");
   if (bus == 0) {
     if (addr == 0x251) {
       int torque_driver_new = (GET_BYTES(to_push, 0, 2) & 0x7ffU) - 1024U;
       // update array of samples
       update_sample(&torque_driver, torque_driver_new);
     }
-
-    printf("bus 0 is now\n");
+    puts("bus 0 is now");
     if (addr == 0x420) {
-      printf("addr 0x420\n");
+      puts("addr 0x420");
       bool main_button = GET_BIT(to_push, 0U);
-      printf("main button = %d\n", main_button);
+      if (main_button) {
+        puts("main_button : 1");
+      } else {
+        puts("main_button : 0");
+      }
       hyundai_common_cruise_state_check_alt(main_button);
     }
 
