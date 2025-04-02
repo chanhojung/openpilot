@@ -53,6 +53,9 @@ const LongitudinalLimits HYUNDAI_LONG_LIMITS = {
 #define HYUNDAI_FCEV_GAS_ADDR_CHECK \
   {.msg = {{0x91,  0, 8, .ignore_checksum = true, .ignore_counter = true, .frequency = 100U}, { 0 }, { 0 }}}, \
 
+#define HYUNDAI_LEGACY_RX_CHECKS \
+  {.msg = {{0x386, 0, 8, .ignore_checksum = true, .ignore_counter = true, .max_counter = 0U, .frequency = 50U}, { 0 }, { 0 }}}, \
+
 static const CanMsg HYUNDAI_TX_MSGS[] = {
   HYUNDAI_COMMON_TX_MSGS(0)
 };
@@ -135,11 +138,6 @@ static void hyundai_rx_hook(const CANPacket_t *to_push) {
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
 
-  // if ((addr == 0x420) && hyundai_kisa_community_eng) {
-  //   bool main_button = GET_BIT(to_push, 0U);
-  //   hyundai_common_cruise_state_check_alt(main_button);
-  // }
-
   // SCC12 is on bus 2 for camera-based SCC cars, bus 0 on all others
   // if ((addr == 0x421) && !hyundai_kisa_community_eng) {
   //   if (((bus == 0) && !hyundai_camera_scc) || ((bus == 2) && hyundai_camera_scc)) {
@@ -156,13 +154,18 @@ static void hyundai_rx_hook(const CANPacket_t *to_push) {
       update_sample(&torque_driver, torque_driver_new);
     }
 
-    // ACC steering wheel buttons
-    if (addr == 0x4F1) {
-      int cruise_button = GET_BYTE(to_push, 0) & 0x7U;
-      bool main_button = GET_BIT(to_push, 3U);
-      bool lfa_button = false;
-      hyundai_common_cruise_buttons_check(cruise_button, main_button, lfa_button);
+    if (addr == 0x420) {
+      bool main_button = GET_BIT(to_push, 0U);
+      hyundai_common_cruise_state_check_alt(main_button);
     }
+
+    // // ACC steering wheel buttons
+    // if (addr == 0x4F1) {
+    //   int cruise_button = GET_BYTE(to_push, 0) & 0x7U;
+    //   bool main_button = GET_BIT(to_push, 3U);
+    //   bool lfa_button = false;
+    //   hyundai_common_cruise_buttons_check(cruise_button, main_button, lfa_button);
+    // }
 
     // gas press, different for EV, hybrid, and ICE models
     if ((addr == 0x371) && hyundai_ev_gas_signal) {
@@ -252,17 +255,17 @@ static bool hyundai_tx_hook(const CANPacket_t *to_send) {
   }
 
   // BUTTONS: used for resume spamming and cruise cancellation
-  if ((addr == 0x4F1) && !hyundai_longitudinal) {
-    int button = GET_BYTE(to_send, 0) & 0x7U;
+  // if ((addr == 0x4F1) && !hyundai_longitudinal) {
+  //   int button = GET_BYTE(to_send, 0) & 0x7U;
 
-    bool allowed_resume = (button == 1) && controls_allowed;
-    bool allowed_set = (button == 2) && controls_allowed;
-    bool allowed_gap = (button == 3) && controls_allowed;
-    bool allowed_cancel = (button == 4) && cruise_engaged_prev;
-    if (!(allowed_resume || allowed_cancel || allowed_set || allowed_gap)) {
-      tx = false;
-    }
-  }
+  //   bool allowed_resume = (button == 1) && controls_allowed;
+  //   bool allowed_set = (button == 2) && controls_allowed;
+  //   bool allowed_gap = (button == 3) && controls_allowed;
+  //   bool allowed_cancel = (button == 4) && cruise_engaged_prev;
+  //   if (!(allowed_resume || allowed_cancel || allowed_set || allowed_gap)) {
+  //     tx = false;
+  //   }
+  // }
 
   return tx;
 }
@@ -335,8 +338,12 @@ static safety_config hyundai_init(uint16_t param) {
     ret = BUILD_SAFETY_CFG(hyundai_cam_scc_rx_checks, HYUNDAI_CAMERA_SCC_TX_MSGS);
   } else {
     static RxCheck hyundai_rx_checks[] = {
-       HYUNDAI_COMMON_RX_CHECKS(false)
-       HYUNDAI_SCC12_ADDR_CHECK(0)
+      HYUNDAI_COMMON_RX_CHECKS(false)
+      HYUNDAI_SCC12_ADDR_CHECK(0)
+    };
+
+    static RxCheck hyundai_rx_legacy_checks[] = {
+      HYUNDAI_LEGACY_RX_CHECKS
     };
 
     static RxCheck hyundai_fcev_rx_checks[] = {
@@ -349,7 +356,7 @@ static safety_config hyundai_init(uint16_t param) {
     if (hyundai_fcev_gas_signal) {
       SET_RX_CHECKS(hyundai_fcev_rx_checks, ret);
     } else {
-      SET_RX_CHECKS(hyundai_rx_checks, ret);
+      SET_RX_CHECKS(hyundai_rx_legacy_checks, ret);
     }
   }
   return ret;
@@ -358,8 +365,8 @@ static safety_config hyundai_init(uint16_t param) {
 static safety_config hyundai_legacy_init(uint16_t param) {
   // older hyundai models have less checks due to missing counters and checksums
   static RxCheck hyundai_legacy_rx_checks[] = {
-    // HYUNDAI_COMMON_RX_CHECKS(true)
-    // HYUNDAI_SCC12_ADDR_CHECK(0)
+    HYUNDAI_COMMON_RX_CHECKS(true)
+    HYUNDAI_SCC12_ADDR_CHECK(0)
   };
 
   hyundai_common_init(param);
