@@ -146,21 +146,21 @@ static void hyundai_rx_hook(const CANPacket_t *to_push) {
   //   }
   // }
 
-  puts("rx message");
+  print("rx message"); print("\n");
   if (bus == 0) {
     if (addr == 0x251) {
       int torque_driver_new = (GET_BYTES(to_push, 0, 2) & 0x7ffU) - 1024U;
       // update array of samples
       update_sample(&torque_driver, torque_driver_new);
     }
-    puts("bus 0 is now");
+    print("bus is now 0"); print("\n");
     if (addr == 0x420) {
-      puts("addr 0x420");
+      print("addr 0x420"); print("\n");
       bool main_button = GET_BIT(to_push, 0U);
       if (main_button) {
-        puts("main_button : 1");
+        print("main_button : 1"); print("\n");
       } else {
-        puts("main_button : 0");
+        print("main_button : 0"); print("\n");
       }
       hyundai_common_cruise_state_check_alt(main_button);
     }
