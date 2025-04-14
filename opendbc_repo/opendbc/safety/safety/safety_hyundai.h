@@ -50,6 +50,9 @@ const LongitudinalLimits HYUNDAI_LONG_LIMITS = {
 #define HYUNDAI_SCC12_ADDR_CHECK(scc_bus)                                               \
   {.msg = {{0x421, (scc_bus), 8, .max_counter = 15U, .frequency = 50U}, { 0 }, { 0 }}}, \
 
+#define HYUNDAI_SCC11_ADDR_CHECK(scc_bus)                                               \
+  {.msg = {{0x420, (scc_bus), 8, .max_counter = 15U, .frequency = 50U}, { 0 }, { 0 }}}, \
+
 #define HYUNDAI_FCEV_GAS_ADDR_CHECK \
   {.msg = {{0x91,  0, 8, .ignore_checksum = true, .ignore_counter = true, .frequency = 100U}, { 0 }, { 0 }}}, \
 
@@ -359,7 +362,7 @@ static safety_config hyundai_legacy_init(uint16_t param) {
   // older hyundai models have less checks due to missing counters and checksums
   static RxCheck hyundai_legacy_rx_checks[] = {
     HYUNDAI_COMMON_RX_CHECKS(true)
-    HYUNDAI_SCC12_ADDR_CHECK(0)
+    HYUNDAI_SCC11_ADDR_CHECK(0)
   };
 
   hyundai_common_init(param);
