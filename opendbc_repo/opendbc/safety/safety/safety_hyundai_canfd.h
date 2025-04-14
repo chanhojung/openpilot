@@ -97,7 +97,7 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
         main_button = GET_BIT(to_push, 34U);
         lfa_button = GET_BIT(to_push, 39U);
       }
-      hyundai_common_cruise_buttons_check(cruise_button, main_button, lfa_button && !hyundai_kisa_community_eng);
+      hyundai_common_cruise_buttons_check(cruise_button, main_button, lfa_button && hyundai_kisa_community_eng);
     }
 
     // gas press, different for EV, hybrid, and ICE models
@@ -139,11 +139,6 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
       hyundai_common_cruise_state_check(cruise_engaged);
     }
   }
-
-  if (hyundai_kisa_community_eng) {
-    hyundai_common_cruise_state_check_alt(true);
-  }
-
 }
 
 static bool hyundai_canfd_tx_hook(const CANPacket_t *to_send) {
