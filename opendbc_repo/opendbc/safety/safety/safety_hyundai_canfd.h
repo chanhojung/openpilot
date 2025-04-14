@@ -361,8 +361,8 @@ static safety_config hyundai_canfd_init(uint16_t param) {
       // E-CAN is on bus 1, SCC messages are sent on cars with ADRV ECU.
       // Does not use the alt buttons message
       static RxCheck hyundai_canfd_lka_steering_rx_checks[] = {
-        // HYUNDAI_CANFD_STD_BUTTONS_RX_CHECKS(1)
-        // HYUNDAI_CANFD_SCC_ADDR_CHECK(1)
+        HYUNDAI_CANFD_STD_BUTTONS_RX_CHECKS(1)
+        HYUNDAI_CANFD_SCC_ADDR_CHECK(1)
       };
 
       SET_RX_CHECKS(hyundai_canfd_lka_steering_rx_checks, ret);
