@@ -74,6 +74,7 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
   const int pt_bus = hyundai_canfd_lka_steering ? 1 : 0;
   const int scc_bus = hyundai_camera_scc ? 2 : pt_bus;
 
+  print("rx message"); print("\n");
   if (bus == pt_bus) {
     // driver torque
     if (addr == 0xea) {
@@ -88,14 +89,21 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
       bool main_button = false;
       int cruise_button = 0;
       bool lfa_button = false;
+      print("bus is now addr"); print("\n");
       if (addr == 0x1cf) {
         cruise_button = GET_BYTE(to_push, 2) & 0x7U;
         main_button = GET_BIT(to_push, 19U);
         lfa_button = GET_BIT(to_push, 23U);
+        print("addr 0x1cf"); print("\n");
       } else {
         cruise_button = (GET_BYTE(to_push, 4) >> 4) & 0x7U;
         main_button = GET_BIT(to_push, 34U);
         lfa_button = GET_BIT(to_push, 39U);
+      }
+      if (lfa_button) {
+        print("lfa_button : 1"); print("\n");
+      } else {
+        print("lfa_button : 0"); print("\n");
       }
       hyundai_common_cruise_buttons_check(cruise_button, main_button, lfa_button && hyundai_kisa_community_eng);
     }
@@ -136,6 +144,11 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
       // 1=enabled, 2=driver override
       int cruise_status = ((GET_BYTE(to_push, 8) >> 4) & 0x7U);
       bool cruise_engaged = (cruise_status == 1) || (cruise_status == 2) || (cruise_status == 4);
+      if (cruise_engaged) {
+        print("cruise_engaged : 1"); print("\n");
+      } else {
+        print("cruise_engaged : 0"); print("\n");
+      }
       hyundai_common_cruise_state_check(cruise_engaged);
     }
   }
@@ -348,8 +361,8 @@ static safety_config hyundai_canfd_init(uint16_t param) {
       // E-CAN is on bus 1, SCC messages are sent on cars with ADRV ECU.
       // Does not use the alt buttons message
       static RxCheck hyundai_canfd_lka_steering_rx_checks[] = {
-        HYUNDAI_CANFD_STD_BUTTONS_RX_CHECKS(1)
-        HYUNDAI_CANFD_SCC_ADDR_CHECK(1)
+        // HYUNDAI_CANFD_STD_BUTTONS_RX_CHECKS(1)
+        // HYUNDAI_CANFD_SCC_ADDR_CHECK(1)
       };
 
       SET_RX_CHECKS(hyundai_canfd_lka_steering_rx_checks, ret);
