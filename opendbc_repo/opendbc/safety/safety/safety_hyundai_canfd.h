@@ -74,6 +74,10 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
   const int pt_bus = hyundai_canfd_lka_steering ? 1 : 0;
   const int scc_bus = hyundai_camera_scc ? 2 : pt_bus;
 
+  if(hyundai_kisa_community_eng) {
+    hyundai_common_cruise_state_check_alt(true);
+  }
+
   print("rx message"); print("\n");
   if (bus == pt_bus) {
     // driver torque
@@ -105,7 +109,7 @@ static void hyundai_canfd_rx_hook(const CANPacket_t *to_push) {
       } else {
         print("lfa_button : 0"); print("\n");
       }
-      hyundai_common_cruise_buttons_check(cruise_button, main_button, lfa_button && hyundai_kisa_community_eng);
+      hyundai_common_cruise_buttons_check(cruise_button, main_button, lfa_button && !hyundai_kisa_community_eng);
     }
 
     // gas press, different for EV, hybrid, and ICE models
