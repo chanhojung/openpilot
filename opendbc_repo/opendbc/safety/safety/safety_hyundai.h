@@ -50,8 +50,8 @@ const LongitudinalLimits HYUNDAI_LONG_LIMITS = {
 #define HYUNDAI_SCC12_ADDR_CHECK(scc_bus)                                               \
   {.msg = {{0x421, (scc_bus), 8, .max_counter = 15U, .frequency = 50U}, { 0 }, { 0 }}}, \
 
-#define HYUNDAI_SCC11_ADDR_CHECK(scc_bus)                                               \
-  {.msg = {{0x420, (scc_bus), 8, .ignore_checksum = true, .max_counter = 15U, .frequency = 50U}, { 0 }, { 0 }}}, \
+#define HYUNDAI_SCC11_ADDR_CHECK(scc_bus)                                                                            \
+  {.msg = {{0x420, (scc_bus), 8, .ignore_checksum = true, .ignore_counter = true, .frequency = 50U}, { 0 }, { 0 }}}, \
 
 #define HYUNDAI_FCEV_GAS_ADDR_CHECK \
   {.msg = {{0x91,  0, 8, .ignore_checksum = true, .ignore_counter = true, .frequency = 100U}, { 0 }, { 0 }}}, \
@@ -138,17 +138,21 @@ static void hyundai_rx_hook(const CANPacket_t *to_push) {
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
 
-  // if (addr == 0x420 && hyundai_kisa_community_eng) {
-  //   bool main_button = GET_BIT(to_push, 0U);
-  //   hyundai_common_cruise_state_check_alt(main_button);
-  // }
-
   // SCC12 is on bus 2 for camera-based SCC cars, bus 0 on all others
   if (addr == 0x421 && !hyundai_kisa_community_eng) {
     if (((bus == 0) && !hyundai_camera_scc) || ((bus == 2) && hyundai_camera_scc)) {
       // 2 bits: 13-14
       int cruise_engaged = (GET_BYTES(to_push, 0, 4) >> 13) & 0x3U;
       hyundai_common_cruise_state_check(cruise_engaged);
+    }
+  }
+
+  if (addr == 0x420) {
+    if (((bus == 0) && !hyundai_camera_scc) || ((bus == 2) && hyundai_camera_scc)) {
+      if (!hyundai_longitudinal && hyundai_kisa_community_eng) {
+        bool main_on = GET_BIT(to_push, 0U);
+        hyundai_common_cruise_state_check(main_on);
+      }
     }
   }
 
@@ -192,9 +196,6 @@ static void hyundai_rx_hook(const CANPacket_t *to_push) {
     gas_pressed = brake_pressed = false;
   }
 
-  if (hyundai_kisa_community_eng) {
-    hyundai_common_cruise_state_check_alt(true);
-  }
 }
 
 static bool hyundai_tx_hook(const CANPacket_t *to_send) {
@@ -369,7 +370,6 @@ static safety_config hyundai_init(uint16_t param) {
 static safety_config hyundai_legacy_init(uint16_t param) {
   // older hyundai models have less checks due to missing counters and checksums
   static RxCheck hyundai_legacy_rx_checks[] = {
-    HYUNDAI_COMMON_RX_CHECKS(true)
     HYUNDAI_SCC11_ADDR_CHECK(0)
   };
 
