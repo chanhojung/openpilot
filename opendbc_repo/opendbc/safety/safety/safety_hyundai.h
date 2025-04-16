@@ -147,15 +147,6 @@ static void hyundai_rx_hook(const CANPacket_t *to_push) {
     }
   }
 
-  if (addr == 0x420) {
-    if (((bus == 0) && !hyundai_camera_scc) || ((bus == 2) && hyundai_camera_scc)) {
-      if (!hyundai_longitudinal && hyundai_kisa_community_eng) {
-        bool main_on = GET_BIT(to_push, 0U);
-        hyundai_common_cruise_state_check(main_on);
-      }
-    }
-  }
-
   if (bus == 0) {
     if (addr == 0x251) {
       int torque_driver_new = (GET_BYTES(to_push, 0, 2) & 0x7ffU) - 1024U;
@@ -194,6 +185,10 @@ static void hyundai_rx_hook(const CANPacket_t *to_push) {
       brake_pressed = ((GET_BYTE(to_push, 5) >> 5U) & 0x3U) == 0x2U;
     }
     gas_pressed = brake_pressed = false;
+  }
+
+  if (hyundai_kisa_community_eng) {
+    hyundai_common_cruise_state_check_alt(true);
   }
 
 }
